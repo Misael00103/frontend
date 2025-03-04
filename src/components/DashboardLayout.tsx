@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import Logo from "./Logo";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import Notificationsfrom "./NotificationsPanel";
+import NotificationsPanel from "./NotificationsPanel";
 
 interface SidebarItem {
   icon: JSX.Element;
