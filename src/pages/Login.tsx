@@ -18,7 +18,7 @@ const Login = () => {
     e.preventDefault();
     
     // Demo login - in a real app, this would validate against a backend
-    if (email === 'admin@example.com' && password === 'password') {
+    if (email === 'arkit@gmail.com' && password === 'Arkit2025.') {
       // Set some basic auth in localStorage
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('user', JSON.stringify({ 
@@ -51,6 +51,7 @@ const Login = () => {
               src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
               alt="Logo de la empresa" 
               className={`w-full h-full object-contain ${theme === 'dark' ? 'filter brightness-110' : ''}`}
+              style={{ borderRadius: '50px' }}
             />
           </div>
           <CardTitle className="text-2xl font-bold">Panel de Administración</CardTitle>

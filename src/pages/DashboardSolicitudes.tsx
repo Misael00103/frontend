@@ -1,163 +1,170 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue, 
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { 
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { CalendarIcon, MoreHorizontal, Phone, Search } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Search, Trash2 } from "lucide-react";
 import DashboardNavbar from '@/components/DashboardNavbar';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from "@/components/ui/use-toast";
 
-// Mock data for requests
-const initialRequests = [
-  { 
-    id: 1, 
-    clientName: "Juan Pérez", 
-    email: "juan@example.com",
-    phone: "555-1234",
-    service: "Desarrollo Web",
-    date: "2023-05-15",
-    status: "Nuevo",
-    contactMethod: "Llamada",
-    source: "Google" 
-  },
-  { 
-    id: 2, 
-    clientName: "María García", 
-    email: "maria@example.com",
-    phone: "555-5678",
-    service: "Aplicación Móvil", 
-    date: "2023-05-14",
-    status: "Contactado",
-    contactMethod: "WhatsApp",
-    source: "Facebook" 
-  },
-  { 
-    id: 3, 
-    clientName: "Carlos Rodríguez", 
-    email: "carlos@example.com",
-    phone: "555-9012",
-    service: "E-commerce", 
-    date: "2023-05-10",
-    status: "En proceso",
-    contactMethod: "Llamada",
-    source: "Referido" 
-  },
-  { 
-    id: 4, 
-    clientName: "Ana Martínez", 
-    email: "ana@example.com",
-    phone: "555-3456",
-    service: "Sistema de Inventario", 
-    date: "2023-05-08",
-    status: "Completado",
-    contactMethod: "WhatsApp",
-    source: "Instagram" 
-  },
-  { 
-    id: 5, 
-    clientName: "Roberto Sánchez", 
-    email: "roberto@example.com",
-    phone: "555-7890",
-    service: "Diseño UX/UI", 
-    date: "2023-05-05",
-    status: "Cancelado",
-    contactMethod: "Llamada",
-    source: "LinkedIn" 
-  },
+const statusOptions = [
+  { value: "all", label: "Todos" },
+  { value: "Nuevo", label: "Nuevo" },
+  { value: "Contactado", label: "Contactado" },
+  { value: "En proceso", label: "En proceso" },
+  { value: "Completado", label: "Completado" },
+  { value: "Cancelado", label: "Cancelado" },
 ];
 
-// Status colors mapping
-const statusColors: Record<string, string> = {
-  "Nuevo": "bg-blue-100 text-blue-800",
-  "Contactado": "bg-purple-100 text-purple-800",
-  "En proceso": "bg-yellow-100 text-yellow-800",
-  "Completado": "bg-green-100 text-green-800",
-  "Cancelado": "bg-red-100 text-red-800"
-};
+const actionableStatusOptions = [
+  { value: "Nuevo", label: "Nuevo" },
+  { value: "Contactado", label: "Contactado" },
+  { value: "En proceso", label: "En proceso" },
+  { value: "Completado", label: "Completado" },
+  { value: "Cancelado", label: "Cancelado" },
+];
+
+const serviceOptions = [
+  { value: "all", label: "Todos" },
+  { value: "Desarrollo Web", label: "Desarrollo Web" },
+  { value: "Aplicaciones Web", label: "Aplicaciones Web" },
+  { value: "Aplicaciones Móviles", label: "Aplicaciones Móviles" },
+  { value: "E-commerce", label: "E-commerce" },
+  { value: "Base de Datos", label: "Base de Datos" },
+  { value: "Diseño UX/UI", label: "Diseño UX/UI" },
+  { value: "Sistema de Inventario", label: "Sistema de Inventario" },
+  { value: "Sistema de Help-Desk", label: "Sistema de Help-Desk" },
+  { value: "Contabilidad", label: "Contabilidad" },
+  { value: "Nómina", label: "Nómina" },
+  { value: "Hospitales", label: "Hospitales" },
+];
 
 const DashboardSolicitudes = () => {
-  const [requests, setRequests] = useState(initialRequests);
+  const [requests, setRequests] = useState([]);
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState('all');
-  const [filterService, setFilterService] = useState('all');
-  const [openAlertId, setOpenAlertId] = useState<number | null>(null);
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [serviceFilter, setServiceFilter] = useState('all');
   const { toast } = useToast();
 
-  const handleStatusChange = (requestId: number, newStatus: string) => {
-    setRequests(requests.map(request => 
-      request.id === requestId 
-        ? { ...request, status: newStatus } 
-        : request
-    ));
-    
-    toast({
-      title: "Estado actualizado",
-      description: `La solicitud ha sido marcada como "${newStatus}".`,
-    });
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const fetchRequests = async () => {
+    try {
+      const params = new URLSearchParams({
+        status: statusFilter,
+        service: serviceFilter,
+        ...(searchTerm && { search: searchTerm })
+      });
+      console.log('Fetching requests with params:', params.toString());
+      const response = await fetch(`http://localhost:5000/api/requests?${params}`);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error fetching requests');
+      }
+      const data = await response.json();
+      console.log('Requests fetched:', data);
+      setRequests(data);
+      setFilteredRequests(data);
+    } catch (error) {
+      console.error('Error fetching requests:', error);
+      toast({
+        title: "Error",
+        description: "No se pudieron cargar las solicitudes.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleDeleteRequest = (requestId: number) => {
-    setRequests(requests.filter(request => request.id !== requestId));
-    setOpenAlertId(null);
-    
-    toast({
-      title: "Solicitud eliminada",
-      description: "La solicitud ha sido eliminada permanentemente.",
-      variant: "destructive",
-    });
+  useEffect(() => {
+    fetchRequests();
+  }, [statusFilter, serviceFilter, searchTerm]);
+
+  const handleStatusChange = async (requestId, newStatus) => {
+    try {
+      console.log(`Updating status of request ${requestId} to ${newStatus}`);
+      const response = await fetch(`http://localhost:5000/api/requests/${requestId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error updating status');
+      }
+      const updatedRequest = await response.json();
+      console.log('Updated request:', updatedRequest);
+
+      setRequests(prev => prev.map(req => req._id === requestId ? updatedRequest : req));
+      setFilteredRequests(prev => prev.map(req => req._id === requestId ? updatedRequest : req));
+
+      toast({
+        title: "Estado actualizado",
+        description: `La solicitud ahora está "${newStatus}".`,
+      });
+    } catch (error) {
+      console.error('Error updating status:', error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo actualizar el estado.",
+        variant: "destructive",
+      });
+    }
   };
 
-  // Get unique services for filter
-  const uniqueServices = Array.from(new Set(requests.map(request => request.service)));
+  const handleDelete = async (requestId) => {
+    try {
+      console.log(`Deleting request ${requestId}`);
+      const response = await fetch(`http://localhost:5000/api/requests/${requestId}`, {
+        method: 'DELETE'
+      });
 
-  // Filter requests
-  const filteredRequests = requests.filter(request => {
-    const matchesSearch = 
-      request.clientName.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      request.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      request.service.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesStatus = filterStatus === 'all' || request.status === filterStatus;
-    const matchesService = filterService === 'all' || request.service === filterService;
-    
-    return matchesSearch && matchesStatus && matchesService;
-  });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error deleting request');
+      }
+
+      setRequests(prev => prev.filter(req => req._id !== requestId));
+      setFilteredRequests(prev => prev.filter(req => req._id !== requestId));
+
+      toast({
+        title: "Solicitud eliminada",
+        description: "La solicitud ha sido eliminada correctamente.",
+      });
+    } catch (error) {
+      console.error('Error deleting request:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar la solicitud.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getStatusBadgeClasses = (status) => {
+    switch (status) {
+      case "Nuevo": return "bg-yellow-100 text-yellow-800";
+      case "Contactado": return "bg-blue-100 text-blue-800";
+      case "En proceso": return "bg-orange-100 text-orange-800";
+      case "Completado": return "bg-green-100 text-green-800";
+      case "Cancelado": return "bg-red-100 text-red-800";
+      default: return "bg-gray-100 text-gray-800";
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <DashboardNavbar />
       
       <main className="container py-8">
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold">Solicitudes de Servicios</h2>
-          <p className="text-muted-foreground">Gestione las solicitudes de servicios de sus clientes</p>
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h2 className="text-2xl font-bold">Gestión de Solicitudes</h2>
+            <p className="text-muted-foreground">Administre las solicitudes de servicio</p>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -171,261 +178,93 @@ const DashboardSolicitudes = () => {
             />
           </div>
           
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="Nuevo">Nuevo</SelectItem>
-              <SelectItem value="Contactado">Contactado</SelectItem>
-              <SelectItem value="En proceso">En proceso</SelectItem>
-              <SelectItem value="Completado">Completado</SelectItem>
-              <SelectItem value="Cancelado">Cancelado</SelectItem>
+              {statusOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           
-          <Select value={filterService} onValueChange={setFilterService}>
+          <Select value={serviceFilter} onValueChange={setServiceFilter}>
             <SelectTrigger>
               <SelectValue placeholder="Filtrar por servicio" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los servicios</SelectItem>
-              {uniqueServices.map(service => (
-                <SelectItem key={service} value={service}>{service}</SelectItem>
+              {serviceOptions.map(option => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </div>
         
-        <Tabs defaultValue="todos" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="todos">Todas las Solicitudes</TabsTrigger>
-            <TabsTrigger value="nuevos">Nuevos</TabsTrigger>
-            <TabsTrigger value="contactados">Contactados</TabsTrigger>
-            <TabsTrigger value="en-proceso">En Proceso</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="todos" className="space-y-4">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Lista de Solicitudes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {filteredRequests.length > 0 ? (
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-7 gap-4 font-medium text-muted-foreground border-b pb-2">
-                      <div>Cliente</div>
-                      <div>Servicio</div>
-                      <div>Fecha</div>
-                      <div>Contacto</div>
-                      <div>Fuente</div>
-                      <div className="text-center">Estado</div>
-                      <div className="text-right">Acciones</div>
-                    </div>
-                    
-                    {filteredRequests.map(request => (
-                      <div key={request.id} className="grid grid-cols-7 gap-4 py-3 border-b last:border-0">
-                        <div>
-                          <p className="font-medium">{request.clientName}</p>
-                          <p className="text-xs text-muted-foreground">{request.email}</p>
-                        </div>
-                        <div>{request.service}</div>
-                        <div className="flex items-center gap-1 text-sm">
-                          <CalendarIcon className="h-3 w-3 text-muted-foreground" />
-                          {request.date}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-3 w-3 text-muted-foreground" />
-                          <span>{request.contactMethod}</span>
-                        </div>
-                        <div>{request.source}</div>
-                        <div className="text-center">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[request.status]}`}>
-                            {request.status}
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem onClick={() => handleStatusChange(request.id, "Nuevo")}>
-                                Marcar como Nuevo
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(request.id, "Contactado")}>
-                                Marcar como Contactado
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(request.id, "En proceso")}>
-                                Marcar como En Proceso
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(request.id, "Completado")}>
-                                Marcar como Completado
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleStatusChange(request.id, "Cancelado")}>
-                                Marcar como Cancelado
-                              </DropdownMenuItem>
-                              <DropdownMenuSeparator />
-                              <DropdownMenuItem 
-                                className="text-destructive focus:text-destructive"
-                                onClick={() => setOpenAlertId(request.id)}
-                              >
-                                Eliminar
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                          
-                          <AlertDialog open={openAlertId === request.id} onOpenChange={() => setOpenAlertId(null)}>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>¿Eliminar esta solicitud?</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Esta acción no se puede deshacer. Esto eliminará permanentemente la solicitud de {request.clientName}.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                <AlertDialogAction onClick={() => handleDeleteRequest(request.id)}>
-                                  Eliminar
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="py-6 text-center text-muted-foreground">
-                    No se encontraron solicitudes con ese criterio de búsqueda.
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="nuevos">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Solicitudes Nuevas</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredRequests
-                    .filter(request => request.status === "Nuevo")
-                    .map(request => (
-                      <Card key={request.id} className="p-4">
-                        <div className="flex justify-between mb-2">
-                          <div>
-                            <h3 className="font-medium">{request.clientName}</h3>
-                            <p className="text-sm text-muted-foreground">{request.email}</p>
-                          </div>
-                          <Badge className={statusColors[request.status]}>
-                            {request.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm mb-2"><strong>Servicio:</strong> {request.service}</p>
-                        <p className="text-sm mb-2"><strong>Método de contacto:</strong> {request.contactMethod}</p>
-                        <p className="text-sm mb-2"><strong>Fuente:</strong> {request.source}</p>
-                        <div className="flex justify-end gap-2 mt-4">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleStatusChange(request.id, "Contactado")}
-                          >
-                            Marcar como Contactado
-                          </Button>
-                        </div>
-                      </Card>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="contactados">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Clientes Contactados</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredRequests
-                    .filter(request => request.status === "Contactado")
-                    .map(request => (
-                      <Card key={request.id} className="p-4">
-                        <div className="flex justify-between mb-2">
-                          <div>
-                            <h3 className="font-medium">{request.clientName}</h3>
-                            <p className="text-sm text-muted-foreground">{request.email}</p>
-                          </div>
-                          <Badge className={statusColors[request.status]}>
-                            {request.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm mb-2"><strong>Servicio:</strong> {request.service}</p>
-                        <p className="text-sm mb-2"><strong>Método de contacto:</strong> {request.contactMethod}</p>
-                        <p className="text-sm mb-2"><strong>Fuente:</strong> {request.source}</p>
-                        <div className="flex justify-end gap-2 mt-4">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleStatusChange(request.id, "En proceso")}
-                          >
-                            Marcar como En Proceso
-                          </Button>
-                        </div>
-                      </Card>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="en-proceso">
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-xl">Servicios En Proceso</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {filteredRequests
-                    .filter(request => request.status === "En proceso")
-                    .map(request => (
-                      <Card key={request.id} className="p-4">
-                        <div className="flex justify-between mb-2">
-                          <div>
-                            <h3 className="font-medium">{request.clientName}</h3>
-                            <p className="text-sm text-muted-foreground">{request.email}</p>
-                          </div>
-                          <Badge className={statusColors[request.status]}>
-                            {request.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm mb-2"><strong>Servicio:</strong> {request.service}</p>
-                        <p className="text-sm mb-2"><strong>Método de contacto:</strong> {request.contactMethod}</p>
-                        <p className="text-sm mb-2"><strong>Fuente:</strong> {request.source}</p>
-                        <div className="flex justify-end gap-2 mt-4">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => handleStatusChange(request.id, "Completado")}
-                          >
-                            Marcar como Completado
-                          </Button>
-                        </div>
-                      </Card>
-                    ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-xl">Lista de Solicitudes</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-secondary/50">
+                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Nombre</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Email</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Teléfono</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Servicio</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Descripción</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Estado</th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {filteredRequests.map((request) => (
+                    <tr key={request._id} className="hover:bg-secondary/30 transition-colors">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{request.name}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{request.email}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{request.phone}</td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">{request.service}</td>
+                      <td className="px-6 py-4 text-sm max-w-xs truncate">{request.description}</td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <Select
+                          value={request.status}
+                          onValueChange={(newStatus) => handleStatusChange(request._id, newStatus)}
+                        >
+                          <SelectTrigger className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeClasses(request.status)}`}>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {actionableStatusOptions.map(option => (
+                              <SelectItem key={option.value} value={option.value}>
+                                {option.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDelete(request._id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500 mr-1" />
+                          Eliminar
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </main>
     </div>
   );

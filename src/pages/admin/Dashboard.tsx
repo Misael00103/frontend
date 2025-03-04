@@ -1,4 +1,4 @@
-
+import { useState, useEffect } from 'react';
 import DashboardLayout from "@/components/DashboardLayout";
 import StatCard from "@/components/StatCard";
 import NotificationsPanel from "@/components/NotificationsPanel";
@@ -9,7 +9,15 @@ import {
 } from "recharts";
 
 const Dashboard = () => {
-  // Datos para gráficos
+  const [stats, setStats] = useState({
+    totalRequests: 0,
+    activeClients: 0,
+    avgResponseTime: 0,
+    serviceBreakdown: [],
+    sourceBreakdown: []
+  });
+  const [recentRequests, setRecentRequests] = useState([]);
+
   const visitData = [
     { name: "Lun", value: 120 },
     { name: "Mar", value: 150 },
@@ -19,50 +27,51 @@ const Dashboard = () => {
     { name: "Sáb", value: 110 },
     { name: "Dom", value: 85 }
   ];
-  
-  const serviceData = [
-    { name: "Des. Web", value: 35 },
-    { name: "App Web", value: 25 },
-    { name: "App Móvil", value: 15 },
-    { name: "E-commerce", value: 20 },
-    { name: "Base Datos", value: 5 }
-  ];
-  
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const statsResponse = await fetch('http://localhost:5000/api/requests/stats');
+        if (!statsResponse.ok) throw new Error('Error fetching stats');
+        const statsData = await statsResponse.json();
+        setStats({
+          totalRequests: statsData.totalRequests,
+          activeClients: statsData.activeClients,
+          avgResponseTime: statsData.avgResponseTime / (1000 * 60 * 60), // Convertir a horas
+          serviceBreakdown: statsData.serviceBreakdown,
+          sourceBreakdown: statsData.sourceBreakdown
+        });
+
+        const recentResponse = await fetch('http://localhost:5000/api/requests/recent');
+        if (!recentResponse.ok) throw new Error('Error fetching recent requests');
+        const recentData = await recentResponse.json();
+        setRecentRequests(recentData.map(request => ({
+          id: request._id,
+          name: request.name,
+          service: request.service,
+          date: new Date(request.date).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+          status: request.status
+        })));
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const serviceData = stats.serviceBreakdown.map(item => ({
+    name: item._id.slice(0, 9),
+    value: item.count
+  }));
+
   const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8"];
-  
-  const referralData = [
-    { name: "Facebook", value: 40 },
-    { name: "Instagram", value: 25 },
-    { name: "Google", value: 20 },
-    { name: "Recomendación", value: 10 },
-    { name: "Otros", value: 5 }
-  ];
-  
-  const recentRequests = [
-    {
-      id: "REQ-001",
-      name: "Juan Pérez",
-      service: "Desarrollo Web",
-      date: "10/05/2023",
-      status: "Pendiente"
-    },
-    {
-      id: "REQ-002",
-      name: "María García",
-      service: "Sistema de Inventario",
-      date: "09/05/2023",
-      status: "En Proceso"
-    },
-    {
-      id: "REQ-003",
-      name: "Carlos López",
-      service: "Aplicación Móvil",
-      date: "08/05/2023",
-      status: "Completado"
-    }
-  ];
-  
-  const getStatusBadgeClasses = (status: string) => {
+
+  const referralData = stats.sourceBreakdown.map(item => ({
+    name: item._id.charAt(0).toUpperCase() + item._id.slice(1),
+    value: item.count
+  }));
+
+  const getStatusBadgeClasses = (status) => {
     switch (status) {
       case "Pendiente":
         return "bg-yellow-100 text-yellow-800";
@@ -74,16 +83,15 @@ const Dashboard = () => {
         return "bg-gray-100 text-gray-800";
     }
   };
-  
+
   return (
     <DashboardLayout>
-      <h2 className="text-2xl font-bold mb-6">Panel de Control</h2>
+      <h2 className="text-2xl font-bold mb-6">de Control</h2>
       
-      {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard
           title="Total Solicitudes"
-          value="254"
+          value={stats.totalRequests}
           trend={{ value: 12, positive: true }}
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
@@ -98,7 +106,7 @@ const Dashboard = () => {
         
         <StatCard
           title="Visitas"
-          value="1,543"
+          value="1,543" // No disponible en el backend, mantenemos mock
           trend={{ value: 8, positive: true }}
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
@@ -109,7 +117,7 @@ const Dashboard = () => {
         
         <StatCard
           title="Clientes Activos"
-          value="48"
+          value={stats.activeClients}
           trend={{ value: 5, positive: true }}
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
@@ -123,7 +131,7 @@ const Dashboard = () => {
         
         <StatCard
           title="Tasa de Conversión"
-          value="15.8%"
+          value="15.8%" // No disponible en el backend, mantenemos mock
           trend={{ value: 2.3, positive: false }}
           icon={
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
@@ -134,11 +142,8 @@ const Dashboard = () => {
         />
       </div>
       
-      {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Left Column - Charts */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Visits Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold">Visitas Diarias</h3>
@@ -148,7 +153,6 @@ const Dashboard = () => {
                 <option>Último Año</option>
               </select>
             </div>
-            
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={visitData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
@@ -156,18 +160,15 @@ const Dashboard = () => {
                   <XAxis dataKey="name" />
                   <YAxis />
                   <Tooltip />
-                  <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth={2} activeDot={{ r: 8 }} />
+                  <Line type="monotone" dataKey="value" stroke="#8884d8" strokeWidth="2" activeDot={{ r: 8 }} />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           </div>
           
-          {/* Services and Referrals Chart */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Services Chart */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-6">Servicios Solicitados</h3>
-              
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
@@ -191,10 +192,8 @@ const Dashboard = () => {
               </div>
             </div>
             
-            {/* Referral Chart */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold mb-6">Fuentes de Referencia</h3>
-              
               <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart 
@@ -213,7 +212,6 @@ const Dashboard = () => {
             </div>
           </div>
           
-          {/* Recent Requests */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
             <div className="px-6 py-4 border-b border-border flex items-center justify-between">
               <h3 className="text-lg font-semibold">Solicitudes Recientes</h3>
@@ -221,7 +219,6 @@ const Dashboard = () => {
                 Ver Todas
               </Link>
             </div>
-            
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
@@ -253,14 +250,10 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Right Column - Notifications */}
         <div className="space-y-6">
           <NotificationsPanel />
-          
-          {/* Quick Actions */}
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6">
             <h3 className="text-lg font-semibold mb-4">Acciones Rápidas</h3>
-            
             <div className="space-y-3">
               <Link to="/admin/clients/new" className="flex items-center p-3 rounded-lg hover:bg-secondary transition-colors">
                 <div className="bg-accent/10 p-2 rounded-md mr-3">
@@ -273,7 +266,6 @@ const Dashboard = () => {
                 </div>
                 <span className="text-sm">Agregar Cliente</span>
               </Link>
-              
               <Link to="/admin/requests" className="flex items-center p-3 rounded-lg hover:bg-secondary transition-colors">
                 <div className="bg-accent/10 p-2 rounded-md mr-3">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
@@ -284,7 +276,6 @@ const Dashboard = () => {
                 </div>
                 <span className="text-sm">Ver Solicitudes Pendientes</span>
               </Link>
-              
               <Link to="/admin/metrics" className="flex items-center p-3 rounded-lg hover:bg-secondary transition-colors">
                 <div className="bg-accent/10 p-2 rounded-md mr-3">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">
@@ -294,7 +285,6 @@ const Dashboard = () => {
                 </div>
                 <span className="text-sm">Analizar Métricas</span>
               </Link>
-              
               <Link to="/admin/settings" className="flex items-center p-3 rounded-lg hover:bg-secondary transition-colors">
                 <div className="bg-accent/10 p-2 rounded-md mr-3">
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-accent">

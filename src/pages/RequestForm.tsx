@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { toast } from "sonner";
 import PageTransition from "@/components/PageTransition";
@@ -30,7 +29,7 @@ const RequestForm = () => {
     contactMethod: "whatsapp" // Default contact method
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
@@ -38,7 +37,7 @@ const RequestForm = () => {
     }));
   };
 
-  const handleServiceTypeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+  const handleServiceTypeChange = (e) => {
     setFormData(prev => ({
       ...prev,
       serviceType: e.target.value,
@@ -46,26 +45,27 @@ const RequestForm = () => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      // En un entorno real, esta sería una llamada a la API
-      // const response = await fetch('/api/requests', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(formData)
-      // });
-      
-      // Simulación de respuesta exitosa
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
+      const response = await fetch('http://localhost:5000/api/requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al enviar la solicitud');
+      }
+
+      const data = await response.json();
       toast.success("Solicitud enviada correctamente", {
         description: "Nos pondremos en contacto con usted a la brevedad."
       });
-      
-      // Resetear formulario
+
       setFormData({
         name: "",
         email: "",
@@ -80,14 +80,13 @@ const RequestForm = () => {
     } catch (error) {
       console.error("Error al enviar solicitud:", error);
       toast.error("Error al enviar solicitud", {
-        description: "Por favor intente nuevamente más tarde."
+        description: error.message || "Por favor intente nuevamente más tarde."
       });
     } finally {
       setLoading(false);
     }
   };
 
-  // Opciones de servicio basadas en el tipo seleccionado
   const getServiceOptions = () => {
     switch (formData.serviceType) {
       case "custom":

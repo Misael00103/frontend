@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react'; // Añadimos useEffect
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,17 +9,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { PlusCircle, Search, UserPlus, Edit, CheckCircle, XCircle } from "lucide-react";
 import DashboardNavbar from '@/components/DashboardNavbar';
 
-// Mock data for clients
-const initialClients = [
-  { id: 1, name: "Juan Pérez", email: "juan@example.com", phone: "555-1234", company: "Tecnología XYZ", status: "Activo" },
-  { id: 2, name: "María García", email: "maria@example.com", phone: "555-5678", company: "Diseños ABC", status: "Activo" },
-  { id: 3, name: "Carlos Rodríguez", email: "carlos@example.com", phone: "555-9012", company: "Consultora 123", status: "Inactivo" },
-  { id: 4, name: "Ana Martínez", email: "ana@example.com", phone: "555-3456", company: "Servicios Web", status: "Activo" },
-  { id: 5, name: "Roberto Sánchez", email: "roberto@example.com", phone: "555-7890", company: "Marketing Digital", status: "Inactivo" },
-];
-
 const DashboardClientes = () => {
-  const [clients, setClients] = useState(initialClients);
+  const [clients, setClients] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [newClient, setNewClient] = useState({ name: '', email: '', phone: '', company: '' });
   const [editingClient, setEditingClient] = useState(null);
@@ -28,24 +18,59 @@ const DashboardClientes = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
-  const handleAddClient = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const clientToAdd = {
-      id: clients.length + 1,
-      ...newClient,
-      status: "Activo"
+  // Cargar clientes desde el backend al montar el componente
+  useEffect(() => {
+    const fetchClients = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/clients');
+        if (!response.ok) throw new Error('Error fetching clients');
+        const data = await response.json();
+        setClients(data);
+      } catch (error) {
+        console.error('Error fetching clients:', error);
+        toast({
+          title: "Error",
+          description: "No se pudieron cargar los clientes.",
+          variant: "destructive",
+        });
+      }
     };
-    
-    setClients([...clients, clientToAdd]);
-    setNewClient({ name: '', email: '', phone: '', company: '' });
-    
-    toast({
-      title: "Cliente agregado",
-      description: `${newClient.name} ha sido agregado a la lista de clientes.`,
-    });
-    
-    setIsDialogOpen(false);
+    fetchClients();
+  }, [toast]);
+
+  const handleAddClient = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch('http://localhost:5000/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newClient)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al agregar cliente');
+      }
+
+      const addedClient = await response.json();
+      setClients([...clients, addedClient]);
+      setNewClient({ name: '', email: '', phone: '', company: '' });
+
+      toast({
+        title: "Cliente agregado",
+        description: `${addedClient.name} ha sido agregado a la lista de clientes.`,
+      });
+
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error('Error adding client:', error);
+      toast({
+        title: "Error",
+        description: error.message || "No se pudo agregar el cliente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleEditClient = (client) => {
@@ -53,41 +78,69 @@ const DashboardClientes = () => {
     setIsEditDialogOpen(true);
   };
 
-  const handleUpdateClient = (e: React.FormEvent) => {
+  const handleUpdateClient = async (e) => {
     e.preventDefault();
-    
-    const updatedClients = clients.map(client => 
-      client.id === editingClient.id ? editingClient : client
-    );
-    
-    setClients(updatedClients);
-    
-    toast({
-      title: "Cliente actualizado",
-      description: `${editingClient.name} ha sido actualizado correctamente.`,
-    });
-    
-    setIsEditDialogOpen(false);
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/clients/${editingClient._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(editingClient)
+      });
+
+      if (!response.ok) throw new Error('Error updating client');
+      const updatedClient = await response.json();
+
+      setClients(clients.map(client => 
+        client._id === updatedClient._id ? updatedClient : client
+      ));
+
+      toast({
+        title: "Cliente actualizado",
+        description: `${updatedClient.name} ha sido actualizado correctamente.`,
+      });
+
+      setIsEditDialogOpen(false);
+    } catch (error) {
+      console.error('Error updating client:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo actualizar el cliente.",
+        variant: "destructive",
+      });
+    }
   };
 
-  const toggleClientStatus = (clientId) => {
-    const updatedClients = clients.map(client => {
-      if (client.id === clientId) {
-        const newStatus = client.status === "Activo" ? "Inactivo" : "Activo";
-        return { ...client, status: newStatus };
-      }
-      return client;
-    });
-    
-    setClients(updatedClients);
-    
-    const client = clients.find(c => c.id === clientId);
+  const toggleClientStatus = async (clientId) => {
+    const client = clients.find(c => c._id === clientId);
     const newStatus = client.status === "Activo" ? "Inactivo" : "Activo";
-    
-    toast({
-      title: "Estado actualizado",
-      description: `${client.name} ahora está ${newStatus}.`,
-    });
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/clients/${clientId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...client, status: newStatus })
+      });
+
+      if (!response.ok) throw new Error('Error toggling client status');
+      const updatedClient = await response.json();
+
+      setClients(clients.map(client => 
+        client._id === clientId ? updatedClient : client
+      ));
+
+      toast({
+        title: "Estado actualizado",
+        description: `${client.name} ahora está ${newStatus}.`,
+      });
+    } catch (error) {
+      console.error('Error toggling client status:', error);
+      toast({
+        title: "Error",
+        description: "No se pudo cambiar el estado del cliente.",
+        variant: "destructive",
+      });
+    }
   };
 
   const filteredClients = clients.filter(client => 
@@ -196,7 +249,7 @@ const DashboardClientes = () => {
                   
                   {filteredClients.length > 0 ? (
                     filteredClients.map(client => (
-                      <div key={client.id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-0">
+                      <div key={client._id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-0">
                         <div className="font-medium">{client.name}</div>
                         <div>{client.company}</div>
                         <div>{client.email}</div>
@@ -220,7 +273,7 @@ const DashboardClientes = () => {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => toggleClientStatus(client.id)}
+                            onClick={() => toggleClientStatus(client._id)}
                           >
                             {client.status === "Activo" ? 
                               <XCircle className="h-4 w-4 mr-1 text-red-500" /> : 
@@ -260,7 +313,7 @@ const DashboardClientes = () => {
                   {filteredClients
                     .filter(client => client.status === "Activo")
                     .map(client => (
-                      <div key={client.id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-0">
+                      <div key={client._id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-0">
                         <div className="font-medium">{client.name}</div>
                         <div>{client.company}</div>
                         <div>{client.email}</div>
@@ -282,7 +335,7 @@ const DashboardClientes = () => {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => toggleClientStatus(client.id)}
+                            onClick={() => toggleClientStatus(client._id)}
                           >
                             <XCircle className="h-4 w-4 mr-1 text-red-500" />
                             Desactivar
@@ -314,7 +367,7 @@ const DashboardClientes = () => {
                   {filteredClients
                     .filter(client => client.status === "Inactivo")
                     .map(client => (
-                      <div key={client.id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-0">
+                      <div key={client._id} className="grid grid-cols-6 gap-4 py-3 border-b last:border-0">
                         <div className="font-medium">{client.name}</div>
                         <div>{client.company}</div>
                         <div>{client.email}</div>
@@ -336,7 +389,7 @@ const DashboardClientes = () => {
                           <Button 
                             variant="ghost" 
                             size="sm"
-                            onClick={() => toggleClientStatus(client.id)}
+                            onClick={() => toggleClientStatus(client._id)}
                           >
                             <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
                             Activar

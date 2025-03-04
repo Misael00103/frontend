@@ -30,7 +30,7 @@ const Header = () => {
                     alt="Logo" 
                     className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
                   />
-                  <span className="font-semibold">SoftwareSolutions</span>
+                  <span className="font-semibold">Arkit</span>
                 </Link>
                 <nav className="space-y-2">
                   <Link to="/" onClick={() => setIsMobileMenuOpen(false)}>
@@ -56,8 +56,9 @@ const Header = () => {
               src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
               alt="Logo" 
               className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
+              style={{ borderRadius: '20px' }}
             />
-            <h1 className="text-xl font-semibold hidden sm:block">SoftwareSolutions</h1>
+            <h1 className="text-xl font-semibold hidden sm:block">Arkit</h1>
           </Link>
         </div>
         

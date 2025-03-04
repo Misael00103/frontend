@@ -1,59 +1,58 @@
-
 import { useState, useEffect } from "react";
 import NotificationItem from "./NotificationItem";
 
-// Simular notificaciones
-const mockNotifications = [
-  {
-    id: "1",
-    title: "Nueva Solicitud",
-    message: "Juan Pérez ha enviado una solicitud para Desarrollo Web.",
-    time: "Hace 5 minutos",
-    read: false
-  },
-  {
-    id: "2",
-    title: "Nueva Solicitud",
-    message: "María García ha enviado una solicitud para Sistema de Inventario.",
-    time: "Hace 30 minutos",
-    read: false
-  },
-  {
-    id: "3",
-    title: "Actualización de Perfil",
-    message: "Se han actualizado los datos de la empresa.",
-    time: "Hace 2 horas",
-    read: true
-  },
-  {
-    id: "4",
-    title: "Nuevo Cliente",
-    message: "Se ha agregado un nuevo cliente: Empresa XYZ.",
-    time: "Ayer",
-    read: true
-  }
-];
-
 const NotificationsPanel = () => {
-  const [notifications, setNotifications] = useState(mockNotifications);
+  const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  
+
   useEffect(() => {
-    setUnreadCount(notifications.filter(n => !n.read).length);
-  }, [notifications]);
-  
-  const handleMarkAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
+    const fetchNotifications = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/notifications');
+        if (!response.ok) throw new Error('Error fetching notifications');
+        const data = await response.json();
+        setNotifications(data);
+        setUnreadCount(data.filter(n => !n.read).length);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+    fetchNotifications();
+  }, []);
+
+  const handleMarkAsRead = async (id) => {
+    try {
+      const response = await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Error marking as read');
+      const updatedNotification = await response.json();
+      setNotifications(prev => 
+        prev.map(n => n._id === id ? updatedNotification : n)
+      );
+      setUnreadCount(prev => prev - 1);
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
   };
-  
-  const handleMarkAllAsRead = () => {
-    setNotifications(prev => 
-      prev.map(n => ({ ...n, read: true }))
-    );
+
+  const handleMarkAllAsRead = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/notifications/read-all', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Error marking all as read');
+      setNotifications(prev => 
+        prev.map(n => ({ ...n, read: true }))
+      );
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
   };
-  
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden">
       <div className="px-4 py-3 border-b border-border flex items-center justify-between">
@@ -82,11 +81,11 @@ const NotificationsPanel = () => {
         ) : (
           notifications.map(notification => (
             <NotificationItem
-              key={notification.id}
-              id={notification.id}
+              key={notification._id}
+              id={notification._id}
               title={notification.title}
-              message={notification.message}
-              time={notification.time}
+              message={notification.description}
+              time={new Date(notification.createdAt).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
               read={notification.read}
               onRead={handleMarkAsRead}
             />

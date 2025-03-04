@@ -1,16 +1,108 @@
-
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { BarChart3, Users, Clock, ClipboardList } from "lucide-react";
 import DashboardNavbar from '@/components/DashboardNavbar';
+import StatCard from "@/components/StatCard";
 
 const Dashboard = () => {
+  const [stats, setStats] = useState({
+    totalRequests: 0,
+    activeClients: 0,
+    avgResponseTime: 0
+  });
+  const [recentRequests, setRecentRequests] = useState([]);
+  const [services, setServices] = useState([]);
+  const [sources, setSources] = useState([]);
+  const [error, setError] = useState(null);
+
+  const fetchStats = async () => {
+    try {
+      console.log('Fetching stats...');
+      const statsResponse = await fetch('http://localhost:5000/api/requests/stats');
+      if (!statsResponse.ok) {
+        const errorData = await statsResponse.json();
+        throw new Error(errorData.message || 'Error fetching stats');
+      }
+      const statsData = await statsResponse.json();
+      console.log('Stats data:', statsData);
+      setStats({
+        totalRequests: statsData.totalRequests,
+        activeClients: statsData.activeClients,
+        avgResponseTime: statsData.avgResponseTime / (1000 * 60 * 60)
+      });
+      setServices(statsData.serviceBreakdown.map(item => ({
+        service: item._id,
+        count: item.count,
+        percentage: `${Math.round((item.count / statsData.totalRequests) * 100) || 0}%`
+      })).slice(0, 4));
+      setSources(statsData.sourceBreakdown.map(item => ({
+        source: item._id.charAt(0).toUpperCase() + item._id.slice(1),
+        count: item.count,
+        percentage: `${Math.round((item.count / statsData.totalRequests) * 100) || 0}%`
+      })).slice(0, 4));
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+      setError(error.message);
+    }
+  };
+
+  const fetchRecentRequests = async () => {
+    try {
+      console.log('Fetching recent requests...');
+      const recentResponse = await fetch('http://localhost:5000/api/requests/recent');
+      if (!recentResponse.ok) {
+        const errorData = await recentResponse.json();
+        throw new Error(errorData.message || 'Error fetching recent requests');
+      }
+      const recentData = await recentResponse.json();
+      console.log('Recent requests data:', recentData);
+      const mappedRecent = recentData.map(request => ({
+        name: request.name,
+        service: request.service,
+        date: new Date(request.date).toLocaleString('es-ES', { 
+          day: '2-digit', 
+          month: 'short', 
+          hour: '2-digit', 
+          minute: '2-digit' 
+        }),
+        status: request.status
+      }));
+      console.log('Mapped recent requests:', mappedRecent);
+      setRecentRequests(mappedRecent);
+    } catch (error) {
+      console.error('Error fetching recent requests:', error);
+      setError(prev => prev ? `${prev}; ${error.message}` : error.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+    fetchRecentRequests();
+    const interval = setInterval(() => {
+      fetchStats();
+      fetchRecentRequests();
+    }, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
+  if (error && recentRequests.length === 0) {
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardNavbar />
+        <main className="flex-1 py-8">
+          <div className="container">
+            <p className="text-red-500">Error: {error}</p>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardNavbar />
       
-      {/* Main content */}
       <main className="flex-1 py-8">
         <div className="container">
           <div className="mb-8">
@@ -18,54 +110,33 @@ const Dashboard = () => {
             <p className="text-muted-foreground">Visualiza el rendimiento de tu negocio</p>
           </div>
           
-          {/* Stats */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Solicitudes Totales</CardTitle>
-                <ClipboardList className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">127</div>
-                <p className="text-xs text-muted-foreground">+4% desde el mes pasado</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Clientes Activos</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">45</div>
-                <p className="text-xs text-muted-foreground">+12% desde el mes pasado</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Tiempo de Respuesta</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">1.2h</div>
-                <p className="text-xs text-muted-foreground">-15min desde el mes pasado</p>
-              </CardContent>
-            </Card>
-            
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Tasa de Conversión</CardTitle>
-                <BarChart3 className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">24%</div>
-                <p className="text-xs text-muted-foreground">+2% desde el mes pasado</p>
-              </CardContent>
-            </Card>
+            <StatCard
+              title="Solicitudes Totales"
+              value={stats.totalRequests}
+              trend={{ value: 4, positive: true }}
+              icon={<ClipboardList className="h-4 w-4 text-muted-foreground" />}
+            />
+            <StatCard
+              title="Clientes Activos"
+              value={stats.activeClients}
+              trend={{ value: 12, positive: true }}
+              icon={<Users className="h-4 w-4 text-muted-foreground" />}
+            />
+            <StatCard
+              title="Tiempo de Respuesta"
+              value={`${stats.avgResponseTime.toFixed(1)}h`}
+              trend={{ value: 15, positive: false }}
+              icon={<Clock className="h-4 w-4 text-muted-foreground" />}
+            />
+            <StatCard
+              title="Tasa de Conversión"
+              value="24%"
+              trend={{ value: 2, positive: true }}
+              icon={<BarChart3 className="h-4 w-4 text-muted-foreground" />}
+            />
           </div>
           
-          {/* Tabs for different dashboards */}
           <Tabs defaultValue="solicitudes" className="space-y-4">
             <TabsList>
               <TabsTrigger value="solicitudes">Solicitudes Recientes</TabsTrigger>
@@ -80,22 +151,22 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[
-                      { name: "Juan Pérez", service: "Desarrollo Web", date: "Hoy, 14:30", status: "Nuevo" },
-                      { name: "María García", service: "Aplicación Móvil", date: "Ayer, 10:15", status: "Contactado" },
-                      { name: "Carlos Rodríguez", service: "E-commerce", date: "22 Mayo, 09:45", status: "En proceso" }
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
-                        <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-sm text-muted-foreground">{item.service}</p>
+                    {recentRequests.length === 0 ? (
+                      <p className="text-muted-foreground">No hay solicitudes recientes.</p>
+                    ) : (
+                      recentRequests.map((item, i) => (
+                        <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
+                          <div>
+                            <p className="font-medium">{item.name}</p>
+                            <p className="text-sm text-muted-foreground">{item.service}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm">{item.date}</p>
+                            <p className="text-xs font-medium text-blue-500">{item.status}</p>
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <p className="text-sm">{item.date}</p>
-                          <p className="text-xs font-medium text-blue-500">{item.status}</p>
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </CardContent>
               </Card>
@@ -108,12 +179,7 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[
-                      { service: "Desarrollo Web", count: 42, percentage: "33%" },
-                      { service: "Aplicaciones Móviles", count: 27, percentage: "21%" },
-                      { service: "E-commerce", count: 24, percentage: "19%" },
-                      { service: "Sistema de Inventario", count: 18, percentage: "14%" }
-                    ].map((item, i) => (
+                    {services.map((item, i) => (
                       <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                         <p className="font-medium">{item.service}</p>
                         <div className="text-right">
@@ -134,12 +200,7 @@ const Dashboard = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {[
-                      { source: "Google", count: 56, percentage: "44%" },
-                      { source: "Redes Sociales", count: 38, percentage: "30%" },
-                      { source: "Referidos", count: 21, percentage: "16%" },
-                      { source: "Otros", count: 12, percentage: "10%" }
-                    ].map((item, i) => (
+                    {sources.map((item, i) => (
                       <div key={i} className="flex items-center justify-between border-b pb-4 last:border-0 last:pb-0">
                         <p className="font-medium">{item.source}</p>
                         <div className="text-right">

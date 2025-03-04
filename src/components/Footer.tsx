@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from './ThemeProvider';
-import { WhatsApp, Mail, MapPin, Phone, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
+import { Mail, MapPin, Phone, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
 
 const Footer = () => {
   const { theme } = useTheme();
@@ -18,23 +18,21 @@ const Footer = () => {
                 src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
                 alt="Logo" 
                 className={`h-10 w-10 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
+                style={{ borderRadius: '20px' }}
               />
-              <span className="text-xl font-bold">SoftwareSolutions</span>
+              <span className="text-xl font-bold">Arkit</span>
             </Link>
             <p className="text-foreground/70 mt-2">
               Soluciones de software a medida para hacer crecer su negocio.
             </p>
             <div className="flex space-x-4 mt-4">
-              <a href="#" className="text-foreground/70 hover:text-primary">
+              <a target='_blank' href="https://www.facebook.com/profile.php?id=61573879887989" className="text-foreground/70 hover:text-primary">
                 <Facebook size={20} />
               </a>
-              <a href="#" className="text-foreground/70 hover:text-primary">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="text-foreground/70 hover:text-primary">
+              <a target='_blank' href="https://www.instagram.com/arkit885/" className="text-foreground/70 hover:text-primary">
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-foreground/70 hover:text-primary">
+              <a target='_blank' href="https://www.linkedin.com/company/arkitenterprise/?viewAsMember=true" className="text-foreground/70 hover:text-primary">
                 <Linkedin size={20} />
               </a>
             </div>
@@ -84,26 +82,26 @@ const Footer = () => {
             <ul className="space-y-3">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-primary mt-0.5" />
-                <span className="text-foreground/70">Av. Principal 123, Ciudad, País</span>
+                <span className="text-foreground/70">Dsitrito Nacional, Rep Dom</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="h-5 w-5 text-primary" />
-                <a href="tel:+123456789" className="text-foreground/70 hover:text-primary">+1 (234) 567-890</a>
+                <a href="tel:+8494096331" className="text-foreground/70 hover:text-primary">+1 849 409 6331</a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="h-5 w-5 text-primary" />
-                <a href="mailto:info@example.com" className="text-foreground/70 hover:text-primary">info@example.com</a>
+                <a href="mailto:arkitenterprise@gmail.com" className="text-foreground/70 hover:text-primary">arkitenterprise@gmail.com</a>
               </li>
               <li className="flex items-center gap-3">
-                <WhatsApp className="h-5 w-5 text-green-500" />
-                <a href="https://wa.me/123456789" className="text-foreground/70 hover:text-primary">WhatsApp: +1 (234) 567-890</a>
+                <Phone className="h-5 w-5 text-primary" />
+                <a href="https://wa.me/8494096331" className="text-foreground/70 hover:text-primary">WhatsApp: +1 849 409 6331</a>
               </li>
             </ul>
           </div>
         </div>
         
         <div className="border-t border-gray-200 dark:border-gray-800 mt-12 pt-8 text-center text-foreground/70">
-          <p>&copy; {new Date().getFullYear()} SoftwareSolutions. Todos los derechos reservados.</p>
+          <p>&copy; {new Date().getFullYear()} Arkit. Todos los derechos reservados.</p>
         </div>
       </div>
     </footer>

@@ -10,7 +10,6 @@ import {
   Database, 
   Layers, 
   ClipboardList, 
-  HeadsetHelp,
   Calculator,
   Clock,
   Building2
@@ -98,7 +97,7 @@ const Services = () => {
                 {
                   title: "Sistema de Help-Desk",
                   description: "Plataforma para gestionar incidentes y solicitudes de soporte, con asignación de tickets, SLAs, base de conocimiento y más.",
-                  icon: HeadsetHelp
+                  icon: ClipboardList
                 }
               ].map((service, index) => {
                 const Icon = service.icon;
