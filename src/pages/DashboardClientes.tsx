@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { PlusCircle, Search, UserPlus } from "lucide-react";
+import { PlusCircle, Search, UserPlus, Edit, CheckCircle, XCircle } from "lucide-react";
 import DashboardNavbar from '@/components/DashboardNavbar';
 
 // Mock data for clients
@@ -23,8 +23,10 @@ const DashboardClientes = () => {
   const [clients, setClients] = useState(initialClients);
   const [searchTerm, setSearchTerm] = useState('');
   const [newClient, setNewClient] = useState({ name: '', email: '', phone: '', company: '' });
+  const [editingClient, setEditingClient] = useState(null);
   const { toast } = useToast();
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   const handleAddClient = (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +46,48 @@ const DashboardClientes = () => {
     });
     
     setIsDialogOpen(false);
+  };
+
+  const handleEditClient = (client) => {
+    setEditingClient(client);
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdateClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    const updatedClients = clients.map(client => 
+      client.id === editingClient.id ? editingClient : client
+    );
+    
+    setClients(updatedClients);
+    
+    toast({
+      title: "Cliente actualizado",
+      description: `${editingClient.name} ha sido actualizado correctamente.`,
+    });
+    
+    setIsEditDialogOpen(false);
+  };
+
+  const toggleClientStatus = (clientId) => {
+    const updatedClients = clients.map(client => {
+      if (client.id === clientId) {
+        const newStatus = client.status === "Activo" ? "Inactivo" : "Activo";
+        return { ...client, status: newStatus };
+      }
+      return client;
+    });
+    
+    setClients(updatedClients);
+    
+    const client = clients.find(c => c.id === clientId);
+    const newStatus = client.status === "Activo" ? "Inactivo" : "Activo";
+    
+    toast({
+      title: "Estado actualizado",
+      description: `${client.name} ahora está ${newStatus}.`,
+    });
   };
 
   const filteredClients = clients.filter(client => 
@@ -164,8 +208,26 @@ const DashboardClientes = () => {
                             {client.status}
                           </span>
                         </div>
-                        <div className="text-right">
-                          <Button variant="ghost" size="sm">Editar</Button>
+                        <div className="text-right flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEditClient(client)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => toggleClientStatus(client.id)}
+                          >
+                            {client.status === "Activo" ? 
+                              <XCircle className="h-4 w-4 mr-1 text-red-500" /> : 
+                              <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
+                            }
+                            {client.status === "Activo" ? "Desactivar" : "Activar"}
+                          </Button>
                         </div>
                       </div>
                     ))
@@ -208,8 +270,23 @@ const DashboardClientes = () => {
                             {client.status}
                           </span>
                         </div>
-                        <div className="text-right">
-                          <Button variant="ghost" size="sm">Editar</Button>
+                        <div className="text-right flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEditClient(client)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => toggleClientStatus(client.id)}
+                          >
+                            <XCircle className="h-4 w-4 mr-1 text-red-500" />
+                            Desactivar
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -247,8 +324,23 @@ const DashboardClientes = () => {
                             {client.status}
                           </span>
                         </div>
-                        <div className="text-right">
-                          <Button variant="ghost" size="sm">Editar</Button>
+                        <div className="text-right flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            onClick={() => handleEditClient(client)}
+                          >
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm"
+                            onClick={() => toggleClientStatus(client.id)}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1 text-green-500" />
+                            Activar
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -257,6 +349,57 @@ const DashboardClientes = () => {
             </Card>
           </TabsContent>
         </Tabs>
+        
+        {/* Add Edit Client Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle className="text-xl mb-4">Editar Cliente</DialogTitle>
+            </DialogHeader>
+            {editingClient && (
+              <form onSubmit={handleUpdateClient} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Nombre Completo</Label>
+                  <Input 
+                    id="edit-name" 
+                    value={editingClient.name} 
+                    onChange={e => setEditingClient({...editingClient, name: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-email">Correo Electrónico</Label>
+                  <Input 
+                    id="edit-email" 
+                    type="email" 
+                    value={editingClient.email} 
+                    onChange={e => setEditingClient({...editingClient, email: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-phone">Teléfono</Label>
+                  <Input 
+                    id="edit-phone" 
+                    value={editingClient.phone} 
+                    onChange={e => setEditingClient({...editingClient, phone: e.target.value})}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-company">Empresa</Label>
+                  <Input 
+                    id="edit-company" 
+                    value={editingClient.company} 
+                    onChange={e => setEditingClient({...editingClient, company: e.target.value})}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full">Actualizar Cliente</Button>
+              </form>
+            )}
+          </DialogContent>
+        </Dialog>
       </main>
     </div>
   );

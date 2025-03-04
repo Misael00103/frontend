@@ -13,6 +13,8 @@ import Dashboard from "./pages/Dashboard";
 import DashboardSolicitudes from "./pages/DashboardSolicitudes";
 import DashboardClientes from "./pages/DashboardClientes";
 import Login from "./pages/Login";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +29,17 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   return children;
 };
 
+// Layout component for public pages
+const PublicLayout = ({ children }: { children: JSX.Element }) => {
+  return (
+    <>
+      <Header />
+      {children}
+      <Footer />
+    </>
+  );
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -35,8 +48,8 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/request-form" element={<RequestForm />} />
+            <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
+            <Route path="/request-form" element={<PublicLayout><RequestForm /></PublicLayout>} />
             <Route path="/services" element={<Services />} />
             <Route path="/login" element={<Login />} />
             
@@ -67,7 +80,7 @@ const App = () => (
             />
             
             {/* Catch-all route */}
-            <Route path="*" element={<NotFound />} />
+            <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
