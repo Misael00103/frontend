@@ -174,11 +174,18 @@ const Index = () => {
           <p className="text-xl mb-8 text-accent-foreground/80 max-w-2xl mx-auto">
             Complete nuestro formulario de solicitud y en breve un asesor se pondrá en contacto con usted para discutir su proyecto.
           </p>
-          <Link to="/request-form">
-            <Button size="lg" className="bg-accent-foreground text-accent hover:bg-accent-foreground/90">
-              Solicitar información
-            </Button>
-          </Link>
+          <div className="flex flex-wrap gap-4 justify-center">
+            <Link to="/request-form">
+              <Button size="lg" className="bg-accent-foreground text-accent hover:bg-accent-foreground/90">
+                Solicitar información
+              </Button>
+            </Link>
+            <Link to="/dashboard">
+              <Button size="lg" variant="outline" className="bg-accent/10 hover:bg-accent/20 border-accent-foreground/20 text-accent-foreground">
+                Acceder al Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
       </section>
     </div>
