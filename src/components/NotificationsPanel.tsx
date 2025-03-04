@@ -8,7 +8,7 @@ const NotificationsPanel = () => {
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/notifications');
+        const response = await fetch('https://arkit-backend.onrender.com/api/notifications');
         if (!response.ok) throw new Error('Error fetching notifications');
         const data = await response.json();
         setNotifications(data);
@@ -22,7 +22,7 @@ const NotificationsPanel = () => {
 
   const handleMarkAsRead = async (id) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/notifications/${id}/read`, {
+      const response = await fetch(`https://arkit-backend.onrender.com/api/notifications/${id}/read`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -39,7 +39,7 @@ const NotificationsPanel = () => {
 
   const handleMarkAllAsRead = async () => {
     try {
-      const response = await fetch('http://localhost:5000/api/notifications/read-all', {
+      const response = await fetch('https://arkit-backend.onrender.com/api/notifications/read-all', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' }
       });

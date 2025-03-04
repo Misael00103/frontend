@@ -1,96 +1,75 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { toast } from "@/components/ui/use-toast";
-import { useTheme } from "@/components/ThemeProvider";
+import { useToast } from "@/components/ui/use-toast";
 
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Demo login - in a real app, this would validate against a backend
-    if (email === 'arkit@gmail.com' && password === 'Arkit2025.') {
-      // Set some basic auth in localStorage
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify({ 
-        name: 'Administrador', 
-        email: email, 
-        role: 'admin' 
-      }));
-      
-      toast({
-        title: "Inicio de sesión exitoso",
-        description: "Bienvenido al dashboard de administración",
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
       });
-      
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Login failed');
+      }
+
+      const { token } = await response.json();
+      localStorage.setItem('token', token);
+      toast({ title: "Login exitoso", description: "Bienvenido al dashboard" });
       navigate('/dashboard');
-    } else {
-      toast({
-        title: "Error de inicio de sesión",
-        description: "Credenciales inválidas. Intente con admin@example.com / password",
-        variant: "destructive",
-      });
+    } catch (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md mx-auto">
-        <CardHeader className="space-y-2 text-center">
-          <div className="mx-auto w-24 h-24 mb-4">
-            <img 
-              src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
-              alt="Logo de la empresa" 
-              className={`w-full h-full object-contain ${theme === 'dark' ? 'filter brightness-110' : ''}`}
-              style={{ borderRadius: '50px' }}
+      <div className="max-w-md w-full p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
+        <h2 className="text-2xl font-bold mb-6 text-center">Iniciar Sesión</h2>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label htmlFor="email" className="block text-sm font-medium">Email</label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              placeholder="admin@arkit.site"
             />
           </div>
-          <CardTitle className="text-2xl font-bold">Panel de Administración</CardTitle>
-          <CardDescription>
-            Ingrese sus credenciales para acceder al sistema
-          </CardDescription>
-        </CardHeader>
-        <form onSubmit={handleLogin}>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo electrónico</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="admin@example.com" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Contraseña</Label>
-              <Input 
-                id="password" 
-                type="password" 
-                placeholder="••••••••" 
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-          </CardContent>
-          <CardFooter>
-            <Button type="submit" className="w-full">
-              Iniciar sesión
-            </Button>
-          </CardFooter>
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium">Contraseña</label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              placeholder="••••••"
+            />
+          </div>
+          <Button type="submit" disabled={loading} className="w-full">
+            {loading ? 'Cargando...' : 'Iniciar Sesión'}
+          </Button>
         </form>
-      </Card>
+      </div>
     </div>
   );
 };

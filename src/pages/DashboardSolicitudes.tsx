@@ -59,7 +59,7 @@ const DashboardSolicitudes = () => {
         ...(searchTerm && { search: searchTerm })
       });
       console.log('Fetching requests with params:', params.toString());
-      const response = await fetch(`http://localhost:5000/api/requests?${params}`);
+      const response = await fetch(`https://arkit-backend.onrender.com/api/requests?${params}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Error fetching requests');
@@ -85,7 +85,7 @@ const DashboardSolicitudes = () => {
   const handleStatusChange = async (requestId, newStatus) => {
     try {
       console.log(`Updating status of request ${requestId} to ${newStatus}`);
-      const response = await fetch(`http://localhost:5000/api/requests/${requestId}`, {
+      const response = await fetch(`https://arkit-backend.onrender.com/api/requests/${requestId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
@@ -118,7 +118,7 @@ const DashboardSolicitudes = () => {
   const handleDelete = async (requestId) => {
     try {
       console.log(`Deleting request ${requestId}`);
-      const response = await fetch(`http://localhost:5000/api/requests/${requestId}`, {
+      const response = await fetch(`https://arkit-backend.onrender.com/api/requests/${requestId}`, {
         method: 'DELETE'
       });
 

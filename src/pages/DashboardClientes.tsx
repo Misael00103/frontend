@@ -22,7 +22,7 @@ const DashboardClientes = () => {
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/clients');
+        const response = await fetch('https://arkit-backend.onrender.com/api/clients');
         if (!response.ok) throw new Error('Error fetching clients');
         const data = await response.json();
         setClients(data);
@@ -42,7 +42,7 @@ const DashboardClientes = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('http://localhost:5000/api/clients', {
+      const response = await fetch('https://arkit-backend.onrender.com/api/clients', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newClient)
@@ -82,7 +82,7 @@ const DashboardClientes = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`http://localhost:5000/api/clients/${editingClient._id}`, {
+      const response = await fetch(`https://arkit-backend.onrender.com/api/clients/${editingClient._id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(editingClient)
@@ -116,7 +116,7 @@ const DashboardClientes = () => {
     const newStatus = client.status === "Activo" ? "Inactivo" : "Activo";
 
     try {
-      const response = await fetch(`http://localhost:5000/api/clients/${clientId}`, {
+      const response = await fetch(`https://arkit-backend.onrender.com/api/clients/${clientId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...client, status: newStatus })

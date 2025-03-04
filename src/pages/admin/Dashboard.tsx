@@ -31,7 +31,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const statsResponse = await fetch('http://localhost:5000/api/requests/stats');
+        const statsResponse = await fetch('https://arkit-backend.onrender.com/api/requests/stats');
         if (!statsResponse.ok) throw new Error('Error fetching stats');
         const statsData = await statsResponse.json();
         setStats({
@@ -42,7 +42,7 @@ const Dashboard = () => {
           sourceBreakdown: statsData.sourceBreakdown
         });
 
-        const recentResponse = await fetch('http://localhost:5000/api/requests/recent');
+        const recentResponse = await fetch('https://arkit-backend.onrender.com/api/requests/recent');
         if (!recentResponse.ok) throw new Error('Error fetching recent requests');
         const recentData = await recentResponse.json();
         setRecentRequests(recentData.map(request => ({

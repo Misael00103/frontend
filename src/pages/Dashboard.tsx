@@ -19,7 +19,7 @@ const Dashboard = () => {
   const fetchStats = async () => {
     try {
       console.log('Fetching stats...');
-      const statsResponse = await fetch('http://localhost:5000/api/requests/stats');
+      const statsResponse = await fetch('https://arkit-backend.onrender.com/api/requests/stats');
       if (!statsResponse.ok) {
         const errorData = await statsResponse.json();
         throw new Error(errorData.message || 'Error fetching stats');
@@ -50,7 +50,7 @@ const Dashboard = () => {
   const fetchRecentRequests = async () => {
     try {
       console.log('Fetching recent requests...');
-      const recentResponse = await fetch('http://localhost:5000/api/requests/recent');
+      const recentResponse = await fetch('https://arkit-backend.onrender.com/api/requests/recent');
       if (!recentResponse.ok) {
         const errorData = await recentResponse.json();
         throw new Error(errorData.message || 'Error fetching recent requests');
