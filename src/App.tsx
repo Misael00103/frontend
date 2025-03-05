@@ -23,7 +23,7 @@ const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   console.log('ProtectedRoute - isAuthenticated:', isAuthenticated); // Depuración
   
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/api/login" replace />;
   }
   
   return children;
