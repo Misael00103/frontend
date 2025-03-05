@@ -1,6 +1,5 @@
 
 import PageTransition from "@/components/PageTransition";
-import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { 
   Globe, 

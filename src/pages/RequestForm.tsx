@@ -26,7 +26,7 @@ const RequestForm = () => {
     service: "",
     description: "",
     foundUs: "",
-    contactMethod: "whatsapp" // Default contact method
+    contactMethod: "whatsapp"
   });
 
   const handleChange = (e) => {
@@ -48,20 +48,32 @@ const RequestForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log('Enviando formulario:', formData); 
 
     try {
-      const response = await fetch('https://arkit-backend.onrender.com/api/requests', {
+      const apiUrl = import.meta.env.VITE_API_URL;
+      if (!apiUrl) {
+        throw new Error('VITE_API_URL no está definida en .env');
+      }
+      const url = `${apiUrl}/api/requests`; 
+      console.log('URL de la solicitud:', url);
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
 
+      console.log('Estado de la respuesta:', response.status); // Depuración
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al enviar la solicitud');
+        console.log('Datos de error:', errorData); // Depuración
+        throw new Error(errorData.message || 'No se pudo enviar la solicitud');
       }
 
       const data = await response.json();
+      console.log('Respuesta del servidor:', data); // Depuración
       toast.success("Solicitud enviada correctamente", {
         description: "Nos pondremos en contacto con usted a la brevedad."
       });
@@ -80,7 +92,7 @@ const RequestForm = () => {
     } catch (error) {
       console.error("Error al enviar solicitud:", error);
       toast.error("Error al enviar solicitud", {
-        description: error.message || "Por favor intente nuevamente más tarde."
+        description: error.message || "Por favor, intenta nuevamente más tarde."
       });
     } finally {
       setLoading(false);
@@ -142,6 +154,7 @@ const RequestForm = () => {
                         value={formData.name}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                         className="w-full px-4 py-2 rounded-md border border-input bg-background focus:border-accent focus:ring-1 focus:ring-accent"
                         placeholder="Ingrese su nombre"
                       />
@@ -158,6 +171,7 @@ const RequestForm = () => {
                         value={formData.email}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                         className="w-full px-4 py-2 rounded-md border border-input bg-background focus:border-accent focus:ring-1 focus:ring-accent"
                         placeholder="ejemplo@correo.com"
                       />
@@ -176,6 +190,7 @@ const RequestForm = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         required
+                        disabled={loading}
                         className="w-full px-4 py-2 rounded-md border border-input bg-background focus:border-accent focus:ring-1 focus:ring-accent"
                         placeholder="Ingrese su teléfono"
                       />
@@ -191,6 +206,7 @@ const RequestForm = () => {
                         name="company"
                         value={formData.company}
                         onChange={handleChange}
+                        disabled={loading}
                         className="w-full px-4 py-2 rounded-md border border-input bg-background focus:border-accent focus:ring-1 focus:ring-accent"
                         placeholder="Nombre de su empresa (opcional)"
                       />
@@ -212,6 +228,7 @@ const RequestForm = () => {
                       value={formData.serviceType}
                       onChange={handleServiceTypeChange}
                       required
+                      disabled={loading}
                       className="w-full px-4 py-2 rounded-md border border-input bg-background focus:border-accent focus:ring-1 focus:ring-accent"
                     >
                       <option value="" disabled>Seleccione un tipo</option>
@@ -231,7 +248,7 @@ const RequestForm = () => {
                       value={formData.service}
                       onChange={handleChange}
                       required
-                      disabled={!formData.serviceType}
+                      disabled={!formData.serviceType || loading}
                       className={cn(
                         "w-full px-4 py-2 rounded-md border border-input focus:border-accent focus:ring-1 focus:ring-accent",
                         !formData.serviceType && "bg-gray-100 cursor-not-allowed",
@@ -259,6 +276,7 @@ const RequestForm = () => {
                       value={formData.description}
                       onChange={handleChange}
                       required
+                      disabled={loading}
                       rows={4}
                       className="w-full px-4 py-2 rounded-md border border-input bg-background focus:border-accent focus:ring-1 focus:ring-accent resize-none"
                       placeholder="Describa brevemente lo que necesita..."
@@ -280,6 +298,7 @@ const RequestForm = () => {
                       value={formData.foundUs}
                       onChange={handleChange}
                       required
+                      disabled={loading}
                       className="w-full px-4 py-2 rounded-md border border-input bg-background focus:border-accent focus:ring-1 focus:ring-accent"
                     >
                       <option value="" disabled>Seleccione una opción</option>
@@ -303,6 +322,7 @@ const RequestForm = () => {
                           value="whatsapp"
                           checked={formData.contactMethod === "whatsapp"}
                           onChange={handleChange}
+                          disabled={loading}
                           className="w-4 h-4 text-accent"
                         />
                         <span className="ml-2">WhatsApp</span>
@@ -314,6 +334,7 @@ const RequestForm = () => {
                           value="call"
                           checked={formData.contactMethod === "call"}
                           onChange={handleChange}
+                          disabled={loading}
                           className="w-4 h-4 text-accent"
                         />
                         <span className="ml-2">Llamada Telefónica</span>
