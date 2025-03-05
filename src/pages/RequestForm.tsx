@@ -48,14 +48,14 @@ const RequestForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    console.log('Enviando formulario:', formData); 
+    console.log('Enviando formulario:', formData);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL+'/api/requests';
+      const apiUrl = import.meta.env.VITE_API_URL;
       if (!apiUrl) {
         throw new Error('VITE_API_URL no está definida en .env');
       }
-      const url = `${apiUrl}/`; 
+      const url = `${apiUrl}/api/requests`; // Corregido para apuntar a /api/requests
       console.log('URL de la solicitud:', url);
 
       const response = await fetch(url, {
@@ -64,16 +64,17 @@ const RequestForm = () => {
         body: JSON.stringify(formData)
       });
 
-      console.log('Estado de la respuesta:', response.status); // Depuración
+      console.log('Estado de la respuesta:', response.status);
+      console.log('Headers de la respuesta:', [...response.headers.entries()]);
 
       if (!response.ok) {
-        const errorData = await response.json();
-        console.log('Datos de error:', errorData); // Depuración
-        throw new Error(errorData.message || 'No se pudo enviar la solicitud');
+        const errorData = await response.json().catch(() => ({})); // Manejar caso sin JSON
+        console.log('Datos de error:', errorData);
+        throw new Error(errorData.message || `Error ${response.status}: No se pudo enviar la solicitud`);
       }
 
       const data = await response.json();
-      console.log('Respuesta del servidor:', data); // Depuración
+      console.log('Respuesta del servidor:', data);
       toast.success("Solicitud enviada correctamente", {
         description: "Nos pondremos en contacto con usted a la brevedad."
       });

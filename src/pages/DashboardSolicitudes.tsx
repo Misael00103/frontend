@@ -47,19 +47,34 @@ const DashboardSolicitudes = () => {
   const [serviceFilter, setServiceFilter] = useState('all');
   const { toast } = useToast();
 
-  useEffect(() => {
-    fetchRequests();
-  }, []);
+  // Obtener el token de localStorage (asumiendo que lo guardas al iniciar sesión)
+  const getAuthToken = () => {
+    return localStorage.getItem('token'); // Ajusta según cómo almacenes el token
+  };
 
   const fetchRequests = async () => {
     try {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+      }
+
       const params = new URLSearchParams({
         status: statusFilter,
         service: serviceFilter,
         ...(searchTerm && { search: searchTerm })
       });
       console.log('Fetching requests with params:', params.toString());
-      const response = await fetch(`https://arkit-backend.onrender.com/api/requests?${params}`);
+
+      const response = await fetch(`https://backend-wmsi.onrender.com/api/requests?${params}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`, // Añadir el token al header
+        },
+      });
+      console.log('Response status:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Error fetching requests');
@@ -72,7 +87,7 @@ const DashboardSolicitudes = () => {
       console.error('Error fetching requests:', error);
       toast({
         title: "Error",
-        description: "No se pudieron cargar las solicitudes.",
+        description: error.message || "No se pudieron cargar las solicitudes.",
         variant: "destructive",
       });
     }
@@ -84,10 +99,18 @@ const DashboardSolicitudes = () => {
 
   const handleStatusChange = async (requestId, newStatus) => {
     try {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+      }
+
       console.log(`Updating status of request ${requestId} to ${newStatus}`);
-      const response = await fetch(`https://arkit-backend.onrender.com/api/requests/${requestId}`, {
+      const response = await fetch(`https://backend-wmsi.onrender.com/api/requests/${requestId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ status: newStatus })
       });
 
@@ -117,9 +140,17 @@ const DashboardSolicitudes = () => {
 
   const handleDelete = async (requestId) => {
     try {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+      }
+
       console.log(`Deleting request ${requestId}`);
-      const response = await fetch(`https://arkit-backend.onrender.com/api/requests/${requestId}`, {
-        method: 'DELETE'
+      const response = await fetch(`https://backend-wmsi.onrender.com/api/requests/${requestId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
       });
 
       if (!response.ok) {
@@ -138,7 +169,7 @@ const DashboardSolicitudes = () => {
       console.error('Error deleting request:', error);
       toast({
         title: "Error",
-        description: "No se pudo eliminar la solicitud.",
+        description: error.message || "No se pudo eliminar la solicitud.",
         variant: "destructive",
       });
     }

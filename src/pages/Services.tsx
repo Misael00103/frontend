@@ -1,6 +1,5 @@
 
 import PageTransition from "@/components/PageTransition";
-import Footer from "@/components/Footer";
 import { 
   Globe, 
   Code, 
@@ -164,7 +163,7 @@ const Services = () => {
           </section>
         </div>
       </div>
-      <Footer />
+
     </PageTransition>
   );
 };

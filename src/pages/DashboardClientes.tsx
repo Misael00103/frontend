@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'; // Añadimos useEffect
+import React, { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,19 +18,38 @@ const DashboardClientes = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
+  // Obtener el token de localStorage
+  const getAuthToken = () => {
+    return localStorage.getItem('token');
+  };
+
   // Cargar clientes desde el backend al montar el componente
   useEffect(() => {
     const fetchClients = async () => {
       try {
-        const response = await fetch('https://arkit-backend.onrender.com/api/clients');
-        if (!response.ok) throw new Error('Error fetching clients');
+        const token = getAuthToken();
+        if (!token) {
+          throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+        }
+
+        const response = await fetch('https://backend-wmsi.onrender.com/api/clients', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        console.log('Fetch clients response status:', response.status);
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Error fetching clients');
+        }
         const data = await response.json();
+        console.log('Clients fetched:', data);
         setClients(data);
       } catch (error) {
         console.error('Error fetching clients:', error);
         toast({
           title: "Error",
-          description: "No se pudieron cargar los clientes.",
+          description: error.message || "No se pudieron cargar los clientes.",
           variant: "destructive",
         });
       }
@@ -42,18 +61,29 @@ const DashboardClientes = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch('https://arkit-backend.onrender.com/api/clients', {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+      }
+
+      const response = await fetch('https://backend-wmsi.onrender.com/api/clients', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(newClient)
       });
 
+      console.log('Add client response status:', response.status);
       if (!response.ok) {
         const errorData = await response.json();
+        console.log('Error data:', errorData);
         throw new Error(errorData.message || 'Error al agregar cliente');
       }
 
       const addedClient = await response.json();
+      console.log('Added client:', addedClient);
       setClients([...clients, addedClient]);
       setNewClient({ name: '', email: '', phone: '', company: '' });
 
@@ -82,14 +112,27 @@ const DashboardClientes = () => {
     e.preventDefault();
 
     try {
-      const response = await fetch(`https://arkit-backend.onrender.com/api/clients/${editingClient._id}`, {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+      }
+
+      const response = await fetch(`https://backend-wmsi.onrender.com/api/clients/${editingClient._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify(editingClient)
       });
 
-      if (!response.ok) throw new Error('Error updating client');
+      console.log('Update client response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error updating client');
+      }
       const updatedClient = await response.json();
+      console.log('Updated client:', updatedClient);
 
       setClients(clients.map(client => 
         client._id === updatedClient._id ? updatedClient : client
@@ -105,7 +148,7 @@ const DashboardClientes = () => {
       console.error('Error updating client:', error);
       toast({
         title: "Error",
-        description: "No se pudo actualizar el cliente.",
+        description: error.message || "No se pudo actualizar el cliente.",
         variant: "destructive",
       });
     }
@@ -116,14 +159,27 @@ const DashboardClientes = () => {
     const newStatus = client.status === "Activo" ? "Inactivo" : "Activo";
 
     try {
-      const response = await fetch(`https://arkit-backend.onrender.com/api/clients/${clientId}`, {
+      const token = getAuthToken();
+      if (!token) {
+        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+      }
+
+      const response = await fetch(`https://backend-wmsi.onrender.com/api/clients/${clientId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
         body: JSON.stringify({ ...client, status: newStatus })
       });
 
-      if (!response.ok) throw new Error('Error toggling client status');
+      console.log('Toggle status response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error toggling client status');
+      }
       const updatedClient = await response.json();
+      console.log('Updated client status:', updatedClient);
 
       setClients(clients.map(client => 
         client._id === clientId ? updatedClient : client
@@ -137,7 +193,7 @@ const DashboardClientes = () => {
       console.error('Error toggling client status:', error);
       toast({
         title: "Error",
-        description: "No se pudo cambiar el estado del cliente.",
+        description: error.message || "No se pudo cambiar el estado del cliente.",
         variant: "destructive",
       });
     }

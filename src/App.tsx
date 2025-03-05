@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,9 +20,10 @@ const queryClient = new QueryClient();
 // Protected route component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
   const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
+  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated); // Depuración
   
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/api/login" replace />;
   }
   
   return children;
@@ -50,9 +50,8 @@ const App = () => (
           <Routes>
             <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
             <Route path="/request-form" element={<PublicLayout><RequestForm /></PublicLayout>} />
-            <Route path="/services" element={<Services />} />
+            <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} /> {/* Añadí PublicLayout */}
             <Route path="/login" element={<Login />} />
-            
             
             {/* Protected dashboard routes */}
             <Route 
