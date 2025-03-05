@@ -51,11 +51,11 @@ const RequestForm = () => {
     console.log('Enviando formulario:', formData); 
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL;
+      const apiUrl = import.meta.env.VITE_API_URL+'/api/requests';
       if (!apiUrl) {
         throw new Error('VITE_API_URL no está definida en .env');
       }
-      const url = `${apiUrl}/api/requests`; 
+      const url = `${apiUrl}/`; 
       console.log('URL de la solicitud:', url);
 
       const response = await fetch(url, {

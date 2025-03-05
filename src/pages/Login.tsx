@@ -17,11 +17,11 @@ const Login = () => {
     console.log('Iniciando handleSubmit');
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL+'/api';
+      const apiUrl = import.meta.env.VITE_API_URL+'/api/auth';
       if (!apiUrl) {
         throw new Error('VITE_API_URL no está definida en .env');
       }
-      const url = `${apiUrl}/auth/login`;
+      const url = `${apiUrl}/login`;
       console.log('URL de la solicitud:', url);
 
       const response = await fetch(url, {
