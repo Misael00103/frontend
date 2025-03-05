@@ -14,27 +14,48 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log('Iniciando handleSubmit');
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
+      const apiUrl = import.meta.env.VITE_API_URL+'/api';
+      if (!apiUrl) {
+        throw new Error('VITE_API_URL no está definida en .env');
+      }
+      const url = `${apiUrl}/auth/login`;
+      console.log('URL de la solicitud:', url);
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
 
+      console.log('Estado de la respuesta:', response.status);
+
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Login failed');
+        console.log('Datos de error:', errorData);
+        throw new Error(errorData.message || `Error ${response.status}: Login failed`);
       }
 
       const { token } = await response.json();
+      console.log('Token recibido:', token);
       localStorage.setItem('token', token);
+      localStorage.setItem('isAuthenticated', 'true'); // Añadido para ProtectedRoute
       toast({ title: "Login exitoso", description: "Bienvenido al dashboard" });
-      navigate('/dashboard');
+      console.log('Antes de navegar a /dashboard');
+      navigate('/dashboard', { replace: true }); // Usar replace para evitar volver atrás
+      console.log('Navegación ejecutada');
     } catch (error) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      console.error('Error en login:', error);
+      toast({ 
+        title: "Error", 
+        description: error.message || 'No se pudo iniciar sesión', 
+        variant: "destructive" 
+      });
     } finally {
       setLoading(false);
+      console.log('Finally ejecutado');
     }
   };
 
@@ -52,6 +73,7 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
               required
               placeholder="admin@arkit.site"
+              disabled={loading}
             />
           </div>
           <div>
@@ -63,6 +85,7 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
               required
               placeholder="••••••"
+              disabled={loading}
             />
           </div>
           <Button type="submit" disabled={loading} className="w-full">
