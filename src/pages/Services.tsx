@@ -18,7 +18,6 @@ import {
 const Services = () => {
   return (
     <PageTransition>
-      <Header />
       <div className="pt-16 pb-16">
         <div className="container mx-auto px-6">
           <h1 className="text-4xl font-bold mb-12 text-center">Nuestros Servicios</h1>
