@@ -1,6 +1,6 @@
-
 import { Link } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
+import logoArkit from "@/assets/logoarkit.png"; // Importa la imagen
 
 const Home = () => {
   return (
@@ -9,7 +9,13 @@ const Home = () => {
         {/* Hero Section */}
         <section className="relative h-screen flex items-center">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/10 z-0" />
-          <div className="absolute inset-0 bg-[url('/lovable-uploads/20ccc661-15ad-4a9b-89e9-e270b866cda7.png')] bg-cover bg-center opacity-20 z-0" />
+          <div className="absolute inset-0 opacity-20 z-0">
+            <img 
+              src={logoArkit} 
+              alt="Logo Arkit" 
+              className="w-full h-full object-cover object-center" 
+            />
+          </div>
           
           <div className="container mx-auto px-6 relative z-10">
             <div className="max-w-3xl animate-fade-up">

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
+import logoArkit from "@/assets/logoarkit.png"; 
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -64,7 +65,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="max-w-md w-full p-6 bg-white dark:bg-gray-800 rounded-xl shadow-lg">
       <img 
-          src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" // Ruta relativa desde public/
+          src={logoArkit}
           alt="Arkit Logo" 
           className="h-16 w-auto"
           style={{ margin: '0 auto', display: 'block', marginBottom: '1rem', borderRadius: '50%' }}

@@ -6,7 +6,7 @@ import { ThemeToggle } from "./ThemeProvider";
 import { useTheme } from './ThemeProvider';
 import { Menu } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-
+import logoArkit from "@/assets/logoarkit.png"; 
 const Header = () => {
   const { theme } = useTheme();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -26,7 +26,7 @@ const Header = () => {
               <div className="flex flex-col h-full pt-6">
                 <Link to="/" className="flex items-center gap-2 mb-6" onClick={() => setIsMobileMenuOpen(false)}>
                   <img 
-                    src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
+                    src={logoArkit}
                     alt="Logo" 
                     className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
                   />
@@ -53,7 +53,7 @@ const Header = () => {
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
+              src={logoArkit}
               alt="Logo" 
               className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
               style={{ borderRadius: '20px' }}

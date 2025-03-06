@@ -7,7 +7,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
-
+import logoArkit from "@/assets/logoarkit.png"; 
 const DashboardNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -64,7 +64,7 @@ const DashboardNavbar = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <img 
-                      src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
+                      src={logoArkit}
                       alt="Logo" 
                       className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
                     />
@@ -92,7 +92,7 @@ const DashboardNavbar = () => {
           {/* Logo and title */}
           <Link to="/dashboard" className="flex items-center gap-2">
             <img 
-              src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
+              src={logoArkit} 
               alt="Logo" 
               className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
               style={{ borderRadius: '20px' }}

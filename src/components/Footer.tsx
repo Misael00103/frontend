@@ -3,7 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from './ThemeProvider';
 import { Mail, MapPin, Phone, Facebook, Twitter, Instagram, Linkedin } from 'lucide-react';
-
+import logoArkit from "@/assets/logoarkit.png"; 
 const Footer = () => {
   const { theme } = useTheme();
   
@@ -15,7 +15,7 @@ const Footer = () => {
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2">
               <img 
-                src="/lovable-uploads/878bfc15-c4a7-4cea-8cb6-080496e51d7c.png" 
+                src={logoArkit} 
                 alt="Logo" 
                 className={`h-10 w-10 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
                 style={{ borderRadius: '20px' }}
