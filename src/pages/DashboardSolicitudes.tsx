@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, Trash2 } from "lucide-react";
-import DashboardNavbar from '@/components/DashboardNavbar';
-import { useToast } from "@/components/ui/use-toast";
+"use client"
+
+import { useState, useEffect } from "react"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Search, Trash2 } from "lucide-react"
+import DashboardNavbar from "@/components/DashboardNavbar"
+import { useToast } from "@/components/ui/use-toast"
 
 const statusOptions = [
   { value: "all", label: "Todos" },
@@ -14,7 +16,7 @@ const statusOptions = [
   { value: "En proceso", label: "En proceso" },
   { value: "Completado", label: "Completado" },
   { value: "Cancelado", label: "Cancelado" },
-];
+]
 
 const actionableStatusOptions = [
   { value: "Nuevo", label: "Nuevo" },
@@ -22,7 +24,7 @@ const actionableStatusOptions = [
   { value: "En proceso", label: "En proceso" },
   { value: "Completado", label: "Completado" },
   { value: "Cancelado", label: "Cancelado" },
-];
+]
 
 const serviceOptions = [
   { value: "all", label: "Todos" },
@@ -37,159 +39,165 @@ const serviceOptions = [
   { value: "Contabilidad", label: "Contabilidad" },
   { value: "Nómina", label: "Nómina" },
   { value: "Hospitales", label: "Hospitales" },
-];
+]
 
 const DashboardSolicitudes = () => {
-  const [requests, setRequests] = useState([]);
-  const [filteredRequests, setFilteredRequests] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [serviceFilter, setServiceFilter] = useState('all');
-  const { toast } = useToast();
+  const [requests, setRequests] = useState([])
+  const [filteredRequests, setFilteredRequests] = useState([])
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [serviceFilter, setServiceFilter] = useState("all")
+  const { toast } = useToast()
 
   // Obtener el token de localStorage (asumiendo que lo guardas al iniciar sesión)
   const getAuthToken = () => {
-    return localStorage.getItem('token'); // Ajusta según cómo almacenes el token
-  };
+    return localStorage.getItem("token") // Ajusta según cómo almacenes el token
+  }
 
   const fetchRequests = async () => {
     try {
-      const token = getAuthToken();
+      const token = getAuthToken()
       if (!token) {
-        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+        throw new Error("No hay token de autenticación. Por favor, inicia sesión.")
       }
 
       const params = new URLSearchParams({
         status: statusFilter,
         service: serviceFilter,
-        ...(searchTerm && { search: searchTerm })
-      });
-      console.log('Fetching requests with params:', params.toString());
+        ...(searchTerm && { search: searchTerm }),
+      })
+      console.log("Fetching requests with params:", params.toString())
 
       const response = await fetch(`https://backend-wmsi.onrender.com/api/requests?${params}`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Añadir el token al header
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Añadir el token al header
         },
-      });
-      console.log('Response status:', response.status);
+      })
+      console.log("Response status:", response.status)
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error fetching requests');
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Error fetching requests")
       }
-      const data = await response.json();
-      console.log('Requests fetched:', data);
-      setRequests(data);
-      setFilteredRequests(data);
+      const data = await response.json()
+      console.log("Requests fetched:", data)
+      setRequests(data)
+      setFilteredRequests(data)
     } catch (error) {
-      console.error('Error fetching requests:', error);
+      console.error("Error fetching requests:", error)
       toast({
         title: "Error",
         description: error.message || "No se pudieron cargar las solicitudes.",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   useEffect(() => {
-    fetchRequests();
-  }, [statusFilter, serviceFilter, searchTerm]);
+    fetchRequests()
+  }, [statusFilter, serviceFilter, searchTerm])
 
   const handleStatusChange = async (requestId, newStatus) => {
     try {
-      const token = getAuthToken();
+      const token = getAuthToken()
       if (!token) {
-        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+        throw new Error("No hay token de autenticación. Por favor, inicia sesión.")
       }
 
-      console.log(`Updating status of request ${requestId} to ${newStatus}`);
+      console.log(`Updating status of request ${requestId} to ${newStatus}`)
       const response = await fetch(`https://backend-wmsi.onrender.com/api/requests/${requestId}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ status: newStatus })
-      });
+        body: JSON.stringify({ status: newStatus }),
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error updating status');
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Error updating status")
       }
-      const updatedRequest = await response.json();
-      console.log('Updated request:', updatedRequest);
+      const updatedRequest = await response.json()
+      console.log("Updated request:", updatedRequest)
 
-      setRequests(prev => prev.map(req => req._id === requestId ? updatedRequest : req));
-      setFilteredRequests(prev => prev.map(req => req._id === requestId ? updatedRequest : req));
+      setRequests((prev) => prev.map((req) => (req._id === requestId ? updatedRequest : req)))
+      setFilteredRequests((prev) => prev.map((req) => (req._id === requestId ? updatedRequest : req)))
 
       toast({
         title: "Estado actualizado",
         description: `La solicitud ahora está "${newStatus}".`,
-      });
+      })
     } catch (error) {
-      console.error('Error updating status:', error);
+      console.error("Error updating status:", error)
       toast({
         title: "Error",
         description: error.message || "No se pudo actualizar el estado.",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   const handleDelete = async (requestId) => {
     try {
-      const token = getAuthToken();
+      const token = getAuthToken()
       if (!token) {
-        throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+        throw new Error("No hay token de autenticación. Por favor, inicia sesión.")
       }
 
-      console.log(`Deleting request ${requestId}`);
+      console.log(`Deleting request ${requestId}`)
       const response = await fetch(`https://backend-wmsi.onrender.com/api/requests/${requestId}`, {
-        method: 'DELETE',
+        method: "DELETE",
         headers: {
-          'Authorization': `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
         },
-      });
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error deleting request');
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Error deleting request")
       }
 
-      setRequests(prev => prev.filter(req => req._id !== requestId));
-      setFilteredRequests(prev => prev.filter(req => req._id !== requestId));
+      setRequests((prev) => prev.filter((req) => req._id !== requestId))
+      setFilteredRequests((prev) => prev.filter((req) => req._id !== requestId))
 
       toast({
         title: "Solicitud eliminada",
         description: "La solicitud ha sido eliminada correctamente.",
-      });
+      })
     } catch (error) {
-      console.error('Error deleting request:', error);
+      console.error("Error deleting request:", error)
       toast({
         title: "Error",
         description: error.message || "No se pudo eliminar la solicitud.",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   const getStatusBadgeClasses = (status) => {
     switch (status) {
-      case "Nuevo": return "bg-yellow-100 text-yellow-800";
-      case "Contactado": return "bg-blue-100 text-blue-800";
-      case "En proceso": return "bg-orange-100 text-orange-800";
-      case "Completado": return "bg-green-100 text-green-800";
-      case "Cancelado": return "bg-red-100 text-red-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "Nuevo":
+        return "bg-yellow-100 text-yellow-800"
+      case "Contactado":
+        return "bg-blue-100 text-blue-800"
+      case "En proceso":
+        return "bg-orange-100 text-orange-800"
+      case "Completado":
+        return "bg-green-100 text-green-800"
+      case "Cancelado":
+        return "bg-red-100 text-red-800"
+      default:
+        return "bg-gray-100 text-gray-800"
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background">
       <DashboardNavbar />
-      
+
       <main className="container py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -197,37 +205,37 @@ const DashboardSolicitudes = () => {
             <p className="text-muted-foreground">Administre las solicitudes de servicio</p>
           </div>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input 
-              placeholder="Buscar por nombre, email o servicio..." 
+            <Input
+              placeholder="Buscar..."
               value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
+              onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
-          
+
           <Select value={statusFilter} onValueChange={setStatusFilter}>
             <SelectTrigger>
-              <SelectValue placeholder="Filtrar por estado" />
+              <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
-              {statusOptions.map(option => (
+              {statusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          
+
           <Select value={serviceFilter} onValueChange={setServiceFilter}>
             <SelectTrigger>
-              <SelectValue placeholder="Filtrar por servicio" />
+              <SelectValue placeholder="Servicio" />
             </SelectTrigger>
             <SelectContent>
-              {serviceOptions.map(option => (
+              {serviceOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
                 </SelectItem>
@@ -235,43 +243,61 @@ const DashboardSolicitudes = () => {
             </SelectContent>
           </Select>
         </div>
-        
+
         <Card>
           <CardHeader>
             <CardTitle className="text-xl">Lista de Solicitudes</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[1000px]">
                 <thead>
                   <tr className="bg-secondary/50">
-                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Nombre</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Email</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Teléfono</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Servicio</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Descripción</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Estado</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">Acciones</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                      Nombre
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                      Teléfono
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                      Servicio
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                      Descripción
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                      Estado
+                    </th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-foreground/70 uppercase tracking-wider">
+                      Acciones
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
                   {filteredRequests.map((request) => (
                     <tr key={request._id} className="hover:bg-secondary/30 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{request.name}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{request.email}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{request.phone}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">{request.service}</td>
-                      <td className="px-6 py-4 text-sm max-w-xs truncate">{request.description}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">{request.name}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm truncate max-w-[150px]">{request.email}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">{request.phone}</td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">{request.service}</td>
+                      <td className="px-4 py-4 text-sm max-w-[200px] truncate" title={request.description}>
+                        {request.description}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap">
                         <Select
                           value={request.status}
                           onValueChange={(newStatus) => handleStatusChange(request._id, newStatus)}
                         >
-                          <SelectTrigger className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeClasses(request.status)}`}>
+                          <SelectTrigger
+                            className={`text-xs px-2 py-1 rounded-full ${getStatusBadgeClasses(request.status)}`}
+                          >
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            {actionableStatusOptions.map(option => (
+                            {actionableStatusOptions.map((option) => (
                               <SelectItem key={option.value} value={option.value}>
                                 {option.label}
                               </SelectItem>
@@ -279,12 +305,8 @@ const DashboardSolicitudes = () => {
                           </SelectContent>
                         </Select>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDelete(request._id)}
-                        >
+                      <td className="px-4 py-4 whitespace-nowrap text-sm">
+                        <Button variant="ghost" size="sm" onClick={() => handleDelete(request._id)}>
                           <Trash2 className="h-4 w-4 text-red-500 mr-1" />
                           Eliminar
                         </Button>
@@ -298,7 +320,8 @@ const DashboardSolicitudes = () => {
         </Card>
       </main>
     </div>
-  );
-};
+  )
+}
 
-export default DashboardSolicitudes;
+export default DashboardSolicitudes
+
