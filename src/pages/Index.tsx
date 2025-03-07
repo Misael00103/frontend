@@ -255,15 +255,6 @@ const Index = () => {
                 Solicitar información
               </Button>
             </Link>
-            <Link to="/dashboard">
-              <Button
-                size="lg"
-                variant="outline"
-                className="bg-accent/10 hover:bg-accent/20 border-accent-foreground/20 text-accent-foreground"
-              >
-                Acceder al Dashboard
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
