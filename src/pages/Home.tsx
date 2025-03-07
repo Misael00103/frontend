@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import PageTransition from "@/components/PageTransition";
-import logoArkit from "@/assets/logoarkit.png"; // Importa la imagen
+import { Carousel as FlowbiteCarousel } from "flowbite-react";
 
 const Home = () => {
   return (
@@ -10,30 +10,72 @@ const Home = () => {
         <section className="relative h-screen flex items-center">
           <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-accent/10 z-0" />
           <div className="absolute inset-0 opacity-20 z-0">
-            <img 
-              src={logoArkit} 
-              alt="Logo Arkit" 
-              className="w-full h-full object-cover object-center" 
+            <img
+              src="../../public/UIUX.jpg"
+              alt="Logo Arkit"
+              className="w-full h-full object-cover object-center"
+              onError={() => console.log("Error cargando logoArkit en el fondo")}
             />
           </div>
-          
+
           <div className="container mx-auto px-6 relative z-10">
             <div className="max-w-3xl animate-fade-up">
               <h1 className="text-4xl md:text-6xl font-bold mb-6">
                 Soluciones Tecnológicas para su Negocio
               </h1>
               <p className="text-xl mb-8 text-foreground/80">
-                Desarrollamos aplicaciones personalizadas que impulsan su crecimiento y mejoran su eficiencia operativa.
+                Desarrollamos aplicaciones personalizadas que impulsan su
+                crecimiento y mejoran su eficiencia operativa.
               </p>
+
+              {/* Carrusel debajo de la descripción */}
+              <div className="grid h-56 grid-cols-2 gap-4 sm:h-64 xl:h-80 2xl:h-96 mb-8">
+                <FlowbiteCarousel>
+                  <img
+                    src="../../public/UIUX.jpg"
+                    alt="Slide 1"
+                    className="w-full h-full object-cover"
+                    onError={() => console.log("Error cargando la imagen en el carrusel")}
+                  />
+                  <img
+                    src="../../public/UIUX.jpg"
+                    alt="Slide 2"
+                    className="w-full h-full object-cover"
+                  />
+                  <img
+                    src="../../public/UIUX.jpg"
+                    alt="Slide 3"
+                    className="w-full h-full object-cover"
+                  />
+                </FlowbiteCarousel>
+                <FlowbiteCarousel indicators={true}>
+                  <img
+                    src="../../public/UIUX.jpg"
+                    alt="Slide 1"
+                    className="w-full h-full object-cover"
+                  />
+                  <img
+                    src="../../public/UIUX.jpg"
+                    alt="Slide 2"
+                    className="w-full h-full object-cover"
+                  />
+                  <img
+                    src="../../public/UIUX.jpg"
+                    alt="Slide 3"
+                    className="w-full h-full object-cover"
+                  />
+                </FlowbiteCarousel>
+              </div>
+
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link 
-                  to="/solicitud" 
+                <Link
+                  to="/solicitud"
                   className="px-8 py-3 rounded-lg bg-accent text-white font-medium hover:bg-accent/90 transition-all shadow-lg hover:shadow-xl"
                 >
                   Solicitar Servicio
                 </Link>
-                <Link 
-                  to="/servicios" 
+                <Link
+                  to="/servicios"
                   className="px-8 py-3 rounded-lg border border-primary bg-transparent text-primary font-medium hover:bg-primary/5 transition-all"
                 >
                   Ver Servicios
@@ -42,45 +84,28 @@ const Home = () => {
             </div>
           </div>
         </section>
-        
-        {/* Services Section */}
+
+        {/* Services Section (sin cambios) */}
         <section className="py-20 bg-secondary/50">
           <div className="container mx-auto px-6">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold mb-4">Nuestros Servicios</h2>
               <p className="text-foreground/70 max-w-2xl mx-auto">
-                Ofrecemos una amplia gama de servicios tecnológicos para satisfacer las necesidades específicas de su empresa.
+                Ofrecemos una amplia gama de servicios tecnológicos para
+                satisfacer las necesidades específicas de su empresa.
               </p>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {[
-                {
-                  title: "Desarrollo Web",
-                  description: "Sitios web modernos y responsivos para su presencia digital."
-                },
-                {
-                  title: "Aplicaciones Web",
-                  description: "Soluciones web personalizadas para optimizar sus procesos de negocio."
-                },
-                {
-                  title: "Aplicaciones Móviles",
-                  description: "Apps nativas y multiplataforma para iOS y Android."
-                },
-                {
-                  title: "E-commerce",
-                  description: "Tiendas online robustas y seguras para vender sus productos."
-                },
-                {
-                  title: "Base de Datos",
-                  description: "Diseño y optimización de bases de datos para el manejo eficiente de información."
-                },
-                {
-                  title: "Diseño UX/UI",
-                  description: "Interfaces intuitivas y atractivas centradas en la experiencia del usuario."
-                }
+                { title: "Desarrollo Web", description: "Sitios web modernos y responsivos para su presencia digital." },
+                { title: "Aplicaciones Web", description: "Soluciones web personalizadas para optimizar sus procesos de negocio." },
+                { title: "Aplicaciones Móviles", description: "Apps nativas y multiplataforma para iOS y Android." },
+                { title: "E-commerce", description: "Tiendas online robustas y seguras para vender sus productos." },
+                { title: "Base de Datos", description: "Diseño y optimización de bases de datos para el manejo eficiente de información." },
+                { title: "Diseño UX/UI", description: "Interfaces intuitivas y atractivas centradas en la experiencia del usuario." },
               ].map((service, index) => (
-                <div 
+                <div
                   key={index}
                   className="bg-white dark:bg-gray-800 rounded-xl p-6 shadow-md hover:shadow-lg transition-all hover:translate-y-[-5px]"
                 >
@@ -89,12 +114,9 @@ const Home = () => {
                 </div>
               ))}
             </div>
-            
+
             <div className="text-center mt-12">
-              <Link 
-                to="/servicios" 
-                className="text-accent hover:text-accent/80 font-medium"
-              >
+              <Link to="/servicios" className="text-accent hover:text-accent/80 font-medium">
                 Ver todos los servicios →
               </Link>
             </div>
