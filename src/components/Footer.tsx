@@ -52,7 +52,7 @@ const Footer = () => {
                 <Link to="/request-form" className="text-foreground/70 hover:text-primary">Solicitar Servicio</Link>
               </li>
               <li>
-                <Link to="/login" className="text-foreground/70 hover:text-primary">Acceso Clientes</Link>
+                <Link to="/login" className="text-foreground/70 hover:text-primary">Acceso Empleados</Link>
               </li>
             </ul>
           </div>
