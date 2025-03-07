@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
-import { BarChart3, Bell, ClipboardList, LogOut, Menu, Users, X } from "lucide-react";
+import { BarChart3, Bell, ClipboardList, LogOut, Menu, Users, X, DollarSign, UserCog, ShieldCheck } from 'lucide-react';
 import { ThemeToggle } from "./ThemeProvider";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils';
 import { useTheme } from './ThemeProvider';
 import logoArkit from "@/assets/logoarkit.png"; 
+
 const DashboardNavbar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { theme } = useTheme();
+  const [isAdmin, setIsAdmin] = useState(false);
   
   // Check if user is authenticated
   useEffect(() => {
@@ -20,6 +22,10 @@ const DashboardNavbar = () => {
     if (!isAuthenticated) {
       navigate('/login');
     }
+    
+    // Check if user is admin (you might have this info in your user object)
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    setIsAdmin(user.role === 'admin' || true); // Temporalmente siempre true para pruebas
   }, [navigate]);
 
   // Handle logout
@@ -64,7 +70,7 @@ const DashboardNavbar = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div className="flex items-center gap-2">
                     <img 
-                      src={logoArkit}
+                      src={logoArkit || "/placeholder.svg"}
                       alt="Logo" 
                       className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
                     />
@@ -78,6 +84,18 @@ const DashboardNavbar = () => {
                   <NavItem href="/dashboard" icon={BarChart3}>Dashboard</NavItem>
                   <NavItem href="/dashboard/solicitudes" icon={ClipboardList}>Solicitudes</NavItem>
                   <NavItem href="/dashboard/clientes" icon={Users}>Clientes</NavItem>
+                  
+                  {/* Nuevas secciones de administración */}
+                  {isAdmin && (
+                    <>
+                      <div className="pt-2 pb-1">
+                        <p className="px-2 text-xs font-medium text-muted-foreground">Administración</p>
+                      </div>
+                      <NavItem href="/admin" icon={ShieldCheck}>Panel Admin</NavItem>
+                      <NavItem href="/admin/finance" icon={DollarSign}>Finanzas</NavItem>
+                      <NavItem href="/admin/employees" icon={UserCog}>Empleados</NavItem>
+                    </>
+                  )}
                 </nav>
                 <div className="mt-auto pt-6">
                   <Button variant="outline" className="w-full justify-start" onClick={handleLogout}>
@@ -92,7 +110,7 @@ const DashboardNavbar = () => {
           {/* Logo and title */}
           <Link to="/dashboard" className="flex items-center gap-2">
             <img 
-              src={logoArkit} 
+              src={logoArkit || "/placeholder.svg"} 
               alt="Logo" 
               className={`h-8 w-8 ${theme === 'dark' ? 'filter brightness-110' : ''}`}
               style={{ borderRadius: '20px' }}
@@ -106,6 +124,16 @@ const DashboardNavbar = () => {
           <NavItem href="/dashboard" icon={BarChart3}>Dashboard</NavItem>
           <NavItem href="/dashboard/solicitudes" icon={ClipboardList}>Solicitudes</NavItem>
           <NavItem href="/dashboard/clientes" icon={Users}>Clientes</NavItem>
+          
+          {/* Menú de administración para desktop */}
+          {isAdmin && (
+            <>
+              <div className="h-6 w-px bg-border mx-2"></div>
+              <NavItem href="/admin" icon={ShieldCheck}>Admin</NavItem>
+              <NavItem href="/admin/finance" icon={DollarSign}>Finanzas</NavItem>
+              <NavItem href="/admin/employees" icon={UserCog}>Empleados</NavItem>
+            </>
+          )}
         </nav>
         
         {/* Right side actions */}

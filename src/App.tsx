@@ -14,18 +14,21 @@ import DashboardClientes from "./pages/DashboardClientes";
 import Login from "./pages/Login";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import DashboardEmployees from "./components/Dashboard-Employees";
+import DashboardFinance from "./components/Dashboard-finance";
+import AdminDashboard from "./components/Admin-Dashboard";
 
 const queryClient = new QueryClient();
 
 // Protected route component
 const ProtectedRoute = ({ children }: { children: JSX.Element }) => {
-  const isAuthenticated = localStorage.getItem('isAuthenticated') === 'true';
-  console.log('ProtectedRoute - isAuthenticated:', isAuthenticated); // Depuración
-  
+  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+  console.log("ProtectedRoute - isAuthenticated:", isAuthenticated); // Depuración
+
   if (!isAuthenticated) {
     return <Navigate to="/api/login" replace />;
   }
-  
+
   return children;
 };
 
@@ -48,39 +51,93 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<PublicLayout><Index /></PublicLayout>} />
-            <Route path="/request-form" element={<PublicLayout><RequestForm /></PublicLayout>} />
-            <Route path="/services" element={<PublicLayout><Services /></PublicLayout>} /> {/* Añadí PublicLayout */}
+            <Route
+              path="/"
+              element={
+                <PublicLayout>
+                  <Index />
+                </PublicLayout>
+              }
+            />
+            <Route
+              path="/request-form"
+              element={
+                <PublicLayout>
+                  <RequestForm />
+                </PublicLayout>
+              }
+            />
+            <Route
+              path="/services"
+              element={
+                <PublicLayout>
+                  <Services />
+                </PublicLayout>
+              }
+            />
             <Route path="/login" element={<Login />} />
             
             {/* Protected dashboard routes */}
-            <Route 
-              path="/dashboard" 
+            <Route
+              path="/dashboard"
               element={
                 <ProtectedRoute>
                   <Dashboard />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/dashboard/solicitudes" 
+            <Route
+              path="/dashboard/solicitudes"
               element={
                 <ProtectedRoute>
                   <DashboardSolicitudes />
                 </ProtectedRoute>
-              } 
+              }
             />
-            <Route 
-              path="/dashboard/clientes" 
+            <Route
+              path="/dashboard/clientes"
               element={
                 <ProtectedRoute>
                   <DashboardClientes />
                 </ProtectedRoute>
-              } 
+              }
+            />
+            
+            {/* Nuevas rutas de administración */}
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/finance"
+              element={
+                <ProtectedRoute>
+                  <DashboardFinance />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/employees"
+              element={
+                <ProtectedRoute>
+                  <DashboardEmployees />
+                </ProtectedRoute>
+              }
             />
             
             {/* Catch-all route */}
-            <Route path="*" element={<PublicLayout><NotFound /></PublicLayout>} />
+            <Route
+              path="*"
+              element={
+                <PublicLayout>
+                  <NotFound />
+                </PublicLayout>
+              }
+            />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
